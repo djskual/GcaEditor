@@ -14,6 +14,12 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // Surface de travail par défaut (avant import fond)
+        //BackgroundImage.Width = 1280;
+        //BackgroundImage.Height = 556;
+        //Scene.Width = 1280;
+        //Scene.Height = 556;
     }
 
     private void ImportBackground_Click(object sender, RoutedEventArgs e)

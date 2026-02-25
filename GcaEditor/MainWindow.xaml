@@ -13,7 +13,7 @@
 
         <!-- Colonne gauche -->
         <StackPanel Grid.Column="0" Margin="10">
-            <Button Content="Import fond (PNG 1280x556)" Click="ImportBackground_Click" Margin="0,0,0,6"/>
+            <Button Content="Import Background (PNG 1280x556)" Click="ImportBackground_Click" Margin="0,0,0,6"/>
             <Button Content="Open .gca" Margin="0,0,0,6"/>
             <Button Content="Import image → selected" Margin="0,0,0,6"/>
             <Button Content="Save .gca" Margin="0,0,0,12"/>
@@ -52,8 +52,9 @@
                     <!-- Viewer -->
                     <ScrollViewer x:Name="EditorScroll"
                                   Grid.Row="0"
-                                  Width="900"
-                                  Height="420"
+                                  Width="1150"
+                                  Height="600"
+                                  Background="Black"
                                   HorizontalScrollBarVisibility="Visible"
                                   VerticalScrollBarVisibility="Visible"
                                   SizeChanged="EditorScroll_SizeChanged">
