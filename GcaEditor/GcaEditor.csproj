@@ -8,4 +8,28 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Assets\bar.png" />
+    <None Remove="Assets\cursor.png" />
+    <None Remove="Assets\img.png" />
+    <None Remove="Assets\img_selected.png" />
+    <None Remove="Assets\sun.png" />
+    <None Remove="Assets\sun_slected.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\bar.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\cursor.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\img.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\img_selected.png" />
+    <Resource Include="Assets\sun.png" />
+    <Resource Include="Assets\sun_slected.png" />
+  </ItemGroup>
+
 </Project>
