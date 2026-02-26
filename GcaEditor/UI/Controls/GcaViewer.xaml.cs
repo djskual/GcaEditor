@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,14 +14,30 @@ public partial class GcaViewer : UserControl
 {
     private BitmapSource? _background;
     private BitmapImage? _sunIcon;
+    private BitmapImage? _sunSelectedIcon;
 
     private double _zoom = 1.0;
     private double _minZoom = 1.0;
 
     private GcaDocument? _doc;
 
+    // Drag -> undo snapshot “before”
     private GcaDocument? _dragBeforeSnapshot;
     private bool _dragMoved;
+
+    // Selection
+    private Image? _selectedSun;
+    private GcaZone? _selectedZone;
+
+    // Zone name DB (temp: on passera en JSON plus tard)
+    private readonly Dictionary<ushort, string> _zoneNames = new()
+    {
+        { 0, "Center Console" },
+        { 1, "Front Background Lighting" },
+        { 5, "Footwell" },
+        { 7, "Doors" },
+        { 9, "Roof" },
+    };
 
     public event EventHandler<GcaDocument>? ZoneDragCommitted;
 
@@ -33,10 +50,24 @@ public partial class GcaViewer : UserControl
         _sunIcon = new BitmapImage(new Uri("pack://application:,,,/Assets/sun.png", UriKind.Absolute));
         _sunIcon.Freeze();
 
+        _sunSelectedIcon = new BitmapImage(new Uri("pack://application:,,,/Assets/sun_selected.png", UriKind.Absolute));
+        _sunSelectedIcon.Freeze();
+
         Loaded += (_, __) =>
         {
             var source = (HwndSource)PresentationSource.FromVisual(this)!;
             source.AddHook(WndProc);
+        };
+
+        // Clic "ailleurs" (sans toucher un sun) => deselect
+        // On passe en Preview pour être sûr de capter le clic.
+        ZoomRoot.PreviewMouseLeftButtonDown += (s, e) =>
+        {
+            // Si on clique sur un sun (Image avec Tag=GcaZone), on ne clear pas ici
+            if (e.OriginalSource is Image img && img.Tag is GcaZone)
+                return;
+
+            ClearSelection();
         };
     }
 
@@ -56,16 +87,11 @@ public partial class GcaViewer : UserControl
         SunLayer.Width = bg.PixelWidth;
         SunLayer.Height = bg.PixelHeight;
 
-        // IMPORTANT: Fit meme si le control est deja loaded
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            FitNowStable();
-        }), System.Windows.Threading.DispatcherPriority.Loaded);
+        // Fit stable après layout réel
+        Dispatcher.BeginInvoke(new Action(FitNowStable),
+            System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
-    /// <summary>
-    /// Redimensionne le viewer pour tenir dans l'espace host, puis fait un Fit stable.
-    /// </summary>
     public void SizeToHostAndFit(double hostWidth, double hostHeight)
     {
         if (_background == null) return;
@@ -73,13 +99,11 @@ public partial class GcaViewer : UserControl
 
         Dispatcher.BeginInvoke(new Action(() =>
         {
-            // On mesure le "chrome" reel: tout sauf le viewport du ScrollViewer
             UpdateLayout();
 
             double chromeW = Math.Max(0, ActualWidth - EditorScroll.ViewportWidth);
             double chromeH = Math.Max(0, ActualHeight - EditorScroll.ViewportHeight);
 
-            // Taille max possible du viewport dans le host (avec une marge)
             const double outerMargin = 8;
             double maxViewportW = Math.Max(100, hostWidth - outerMargin - chromeW);
             double maxViewportH = Math.Max(100, hostHeight - outerMargin - chromeH);
@@ -87,9 +111,8 @@ public partial class GcaViewer : UserControl
             double imgW = _background.PixelWidth;
             double imgH = _background.PixelHeight;
 
-            // Scale pour garder le ratio de l'image
             double scale = Math.Min(maxViewportW / imgW, maxViewportH / imgH);
-            scale = Math.Min(scale, 1.0); // ne pas agrandir au-dela de 100% par defaut
+            scale = Math.Min(scale, 1.0);
 
             double viewportW = Math.Floor(imgW * scale);
             double viewportH = Math.Floor(imgH * scale);
@@ -97,7 +120,6 @@ public partial class GcaViewer : UserControl
             Width = viewportW + chromeW;
             Height = viewportH + chromeH;
 
-            // Fit stable apres resize
             Dispatcher.BeginInvoke(new Action(FitNowStable),
                 System.Windows.Threading.DispatcherPriority.Loaded);
 
@@ -113,6 +135,8 @@ public partial class GcaViewer : UserControl
     private void RenderZones()
     {
         SunLayer.Children.Clear();
+        ClearSelection();
+
         if (_doc == null || _sunIcon == null) return;
 
         const double sunSize = 44;
@@ -133,6 +157,13 @@ public partial class GcaViewer : UserControl
             SetSunPositionFromZone(sun, z, sunSize);
             MakeSunDraggableUpdatingZone(sun, z, sunSize, halfZone);
 
+            // Sélection au clic
+            sun.MouseLeftButtonDown += (s, e) =>
+            {
+                SelectSun((Image)s, z);
+                e.Handled = true; // important
+            };
+
             SunLayer.Children.Add(sun);
         }
     }
@@ -145,6 +176,42 @@ public partial class GcaViewer : UserControl
         Canvas.SetTop(sun, top);
     }
 
+    private void SelectSun(Image sun, GcaZone zone)
+    {
+        if (_sunIcon == null || _sunSelectedIcon == null)
+            return;
+
+        if (_selectedSun == sun)
+            return;
+
+        if (_selectedSun != null)
+            _selectedSun.Source = _sunIcon;
+
+        _selectedSun = sun;
+        _selectedZone = zone;
+
+        _selectedSun.Source = _sunSelectedIcon;
+        SelectedZoneText.Text = GetZoneName(zone.Id);
+    }
+
+    private void ClearSelection()
+    {
+        if (_sunIcon != null && _selectedSun != null)
+            _selectedSun.Source = _sunIcon;
+
+        _selectedSun = null;
+        _selectedZone = null;
+        SelectedZoneText.Text = "";
+    }
+
+    private string GetZoneName(ushort zoneId)
+    {
+        if (_zoneNames.TryGetValue(zoneId, out var name))
+            return $"{zoneId} - {name}";
+
+        return $"Zone {zoneId}";
+    }
+
     private void MakeSunDraggableUpdatingZone(Image sun, GcaZone zone, double sunSize, double halfZone)
     {
         bool dragging = false;
@@ -153,6 +220,9 @@ public partial class GcaViewer : UserControl
 
         sun.MouseLeftButtonDown += (s, e) =>
         {
+            // On garde la selection si on drag
+            SelectSun((Image)s, zone);
+
             if (_doc != null)
             {
                 _dragBeforeSnapshot = _doc.DeepClone();
@@ -222,11 +292,9 @@ public partial class GcaViewer : UserControl
     {
         if (_background == null) return;
 
-        // Pass 1
         UpdateLayout();
         FitNowInternal();
 
-        // Pass 2: le viewport peut changer si WPF affiche/masque une scrollbar
         UpdateLayout();
         FitNowInternal();
     }
@@ -278,7 +346,6 @@ public partial class GcaViewer : UserControl
     {
         if (_background == null) return;
 
-        // Si on etait au Fit, on refit automatiquement
         if (Math.Abs(_zoom - _minZoom) < 0.001)
             FitNowStable();
         else

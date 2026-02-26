@@ -14,7 +14,7 @@
     <None Remove="Assets\img.png" />
     <None Remove="Assets\img_selected.png" />
     <None Remove="Assets\sun.png" />
-    <None Remove="Assets\sun_slected.png" />
+    <None Remove="Assets\sun_selected.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,9 +27,15 @@
     <Resource Include="Assets\img.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Assets\img_selected.png" />
-    <Resource Include="Assets\sun.png" />
-    <Resource Include="Assets\sun_slected.png" />
+    <Resource Include="Assets\img_selected.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\sun.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\sun_selected.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

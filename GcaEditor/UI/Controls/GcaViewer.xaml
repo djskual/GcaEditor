@@ -29,33 +29,65 @@
                         <ScaleTransform x:Name="ZoomScale"/>
                     </Grid.LayoutTransform>
 
-                    <!-- Background -->
                     <Image x:Name="BackgroundImage" Stretch="None"/>
-
-                    <!-- Layers -->
                     <Canvas x:Name="AmbientLayer" Background="Transparent"/>
                     <Canvas x:Name="SunLayer" Background="Transparent"/>
                 </Grid>
             </ScrollViewer>
 
+            <!-- Bandeau bas -->
             <Border x:Name="BottomBar"
-                    Grid.Row="1"
-                    Margin="0,8,0,0"
-                    Background="#141414"
-                    CornerRadius="8"
-                    Padding="6">
-                <DockPanel LastChildFill="False">
-                    <TextBlock x:Name="ZoomText"
-                               Foreground="White"
-                               VerticalAlignment="Center"
-                               Text="Zoom: Fit" />
+        Grid.Row="1"
+        Margin="0,8,0,0"
+        Background="#141414"
+        CornerRadius="8"
+        Padding="6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <!-- gauche -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- espace -->
+                        <ColumnDefinition Width="*"/>
+                        <!-- zoom text -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- boutons -->
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                        <Button Content="Fit" Width="48" Height="24" Margin="0,0,6,0" Click="Fit_Click"/>
-                        <Button Content="-" Width="32" Height="24" Margin="0,0,6,0" Click="ZoomOut_Click"/>
-                        <Button Content="+" Width="32" Height="24" Click="ZoomIn_Click"/>
+                    <TextBlock x:Name="SelectedZoneText"
+                   Grid.Column="0"
+                   Foreground="White"
+                   VerticalAlignment="Center"
+                   Margin="4,0,0,0"
+                   Text=""/>
+
+                    <!-- Texte zoom (juste avant boutons) -->
+                    <TextBlock x:Name="ZoomText"
+                   Grid.Column="2"
+                   Foreground="White"
+                   VerticalAlignment="Center"
+                   Margin="0,0,10,0"
+                   Text="Zoom: Fit"/>
+
+                    <!-- Boutons (droite) -->
+                    <StackPanel Grid.Column="3"
+                    Orientation="Horizontal">
+                        <Button Content="Fit"
+                    Width="48"
+                    Height="24"
+                    Margin="0,0,6,0"
+                    Click="Fit_Click"/>
+                        <Button Content="-"
+                    Width="32"
+                    Height="24"
+                    Margin="0,0,6,0"
+                    Click="ZoomOut_Click"/>
+                        <Button Content="+"
+                    Width="32"
+                    Height="24"
+                    Click="ZoomIn_Click"/>
                     </StackPanel>
-                </DockPanel>
+                </Grid>
             </Border>
         </Grid>
     </Border>
