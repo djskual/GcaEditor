@@ -1,100 +1,29 @@
 ﻿<Window x:Class="GcaEditor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:GcaEditor.UI.Controls"
         Title="GCA Editor"
         Width="1400"
         Height="900">
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Colonne gauche -->
         <StackPanel Grid.Column="0" Margin="10">
             <Button Content="Import Background (PNG 1280x556)" Click="ImportBackground_Click" Margin="0,0,0,6"/>
             <Button Content="Open .gca" Click="OpenGca_Click" Margin="0,0,0,6"/>
-            <Button Content="Import image → selected" Margin="0,0,0,6"/>
             <Button Content="Save .gca" Click="SaveGca_Click" Margin="0,0,0,12"/>
-
-            <Separator/>
-
-            <TextBlock Text="Selected:" FontWeight="Bold" Margin="0,10,0,6"/>
-            <UniformGrid Columns="2">
-                <TextBlock Text="X"/>
-                <TextBox/>
-                <TextBlock Text="Y"/>
-                <TextBox/>
-                <TextBlock Text="W"/>
-                <TextBox/>
-                <TextBlock Text="H"/>
-                <TextBox/>
-            </UniformGrid>
         </StackPanel>
 
         <!-- Zone droite -->
-        <Grid Grid.Column="1">
-            <Border HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Margin="12"
-                    BorderBrush="#2A2A2A"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="8">
-
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Viewer -->
-                    <ScrollViewer x:Name="EditorScroll"
-                                  Grid.Row="0"
-                                  Width="1150"
-                                  Height="500"
-                                  Background="Black"
-                                  HorizontalScrollBarVisibility="Visible"
-                                  VerticalScrollBarVisibility="Visible"
-                                  HorizontalContentAlignment="Left"
-                                  VerticalContentAlignment="Top"
-                                  PanningMode="Both"
-                                  IsManipulationEnabled="True"
-                                  SizeChanged="EditorScroll_SizeChanged">
-
-                        <Grid x:Name="ZoomRoot">
-                            <Grid.LayoutTransform>
-                                <ScaleTransform x:Name="ZoomScale"/>
-                            </Grid.LayoutTransform>
-
-                            <Image x:Name="BackgroundImage" Stretch="None"/>
-                            <Canvas x:Name="Scene" Background="Transparent"/>
-                        </Grid>
-                    </ScrollViewer>
-
-                    <!-- Bandeau -->
-                    <Border Grid.Row="1"
-                            Margin="0,8,0,0"
-                            Background="#141414"
-                            CornerRadius="8"
-                            Padding="6">
-                        <DockPanel LastChildFill="False">
-                            <TextBlock x:Name="ZoomText"
-                                       Foreground="White"
-                                       VerticalAlignment="Center"
-                                       Text="Zoom: Fit"/>
-
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                                <Button Content="Fit" Width="48" Height="24" Margin="0,0,6,0" Click="Fit_Click"/>
-                                <Button Content="-" Width="32" Height="24" Margin="0,0,6,0" Click="ZoomOut_Click"/>
-                                <Button Content="+" Width="32" Height="24" Click="ZoomIn_Click"/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-                </Grid>
-            </Border>
+        <Grid x:Name="ViewerHost" Grid.Column="1" Margin="12" SizeChanged="ViewerHost_SizeChanged">
+            <controls:GcaViewer x:Name="Viewer"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Width="980"
+                                Height="480"/>
         </Grid>
     </Grid>
 </Window>
-    
