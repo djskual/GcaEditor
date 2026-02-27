@@ -5,6 +5,7 @@
         Title="GCA Editor"
         Width="1400"
         Height="900">
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="330"/>
@@ -20,14 +21,28 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0">
-                <Button x:Name="ImportBackgroundButton" Content="Import Background (PNG 1280x556)" Click="ImportBackground_Click" Margin="0,0,0,6"/>
-                <Button x:Name="OpenGcaButton" Content="Open .gca" Click="OpenGca_Click" Margin="0,0,0,6" IsEnabled="False"/>
-                <Button x:Name="SaveGcaButton" Content="Save .gca" Click="SaveGca_Click" Margin="0,0,0,12" IsEnabled="False"/>
+                <Button x:Name="ImportBackgroundButton"
+                        Content="Import Background (PNG 1280x556)"
+                        Click="ImportBackground_Click"
+                        Margin="0,0,0,6"/>
+
+                <Button x:Name="OpenGcaButton"
+                        Content="Open .gca"
+                        Click="OpenGca_Click"
+                        Margin="0,0,0,6"
+                        IsEnabled="False"/>
+
+                <Button x:Name="SaveGcaButton"
+                        Content="Save .gca"
+                        Click="SaveGca_Click"
+                        Margin="0,0,0,12"
+                        IsEnabled="False"/>
             </StackPanel>
 
             <StackPanel Grid.Row="2">
+
                 <!-- ZONES -->
-                <GroupBox Header="Zones" Padding="8" Height="200" Margin="0,0,0,10">
+                <GroupBox Header="Zones" Padding="8" Height="195" Margin="0,0,0,10">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -42,47 +57,47 @@
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                  SelectionChanged="ZonesList_SelectionChanged"/>
 
-                        <Grid Grid.Row="2" Margin="0,4,0,0">
+                        <Grid Grid.Row="2" Margin="0,0,0,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <!-- Labels -->
-                            <Grid Grid.Row="0">
+                            <!-- Labels (colonnes IDENTIQUES à la grille Inputs) -->
+                            <Grid Grid.Row="2" Margin="0,6,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="Available" FontSize="11" Foreground="Gray"/>
-                                <TextBlock Grid.Column="2" Text="Custom" FontSize="11" Foreground="Gray"/>
-                            </Grid>
+                                <!-- Available -->
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Available" FontSize="11" Foreground="Gray" Margin="0,0,0,2"/>
+                                    <ComboBox x:Name="AddZoneCombo"
+                                    Height="28"
+                                    VerticalContentAlignment="Center"
+                                    Padding="6,2"
+                                    IsEditable="False"/>
+                                </StackPanel>
 
-                            <!-- Inputs + buttons -->
-                            <Grid Grid.Row="1" Margin="0,2,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                                <!-- Custom -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Custom" FontSize="11" Foreground="Gray" Margin="0,0,0,2"/>
+                                    <TextBox x:Name="CustomZoneIdBox"
+                                    Width="70"
+                                    Height="28"
+                                    VerticalContentAlignment="Center"
+                                    Padding="6,2"
+                                    ToolTip="Custom Zone ID (0..65535)"/>
+                                </StackPanel>
 
-                                <ComboBox x:Name="AddZoneCombo" Grid.Column="0" MinWidth="120" IsEditable="False"/>
-
-                                <TextBox x:Name="CustomZoneIdBox"
-                                         Grid.Column="2"
-                                         Width="64"
-                                         VerticalContentAlignment="Center"
-                                         ToolTip="Custom Zone ID (0..65535)"
-                                         Text=""/>
-
-                                <Button Grid.Column="4" Content="Add" Padding="10,4" Click="AddZone_Click"/>
-                                <Button Grid.Column="6" Content="Delete" Padding="10,4" Click="DeleteZone_Click"/>
+                                <Button Grid.Column="4" Content="Add" Height="28" Padding="10,4" VerticalAlignment="Bottom" Click="AddZone_Click"/>
+                                <Button Grid.Column="6" Content="Delete" Height="28" Padding="10,4" VerticalAlignment="Bottom" Click="DeleteZone_Click"/>
                             </Grid>
                         </Grid>
                     </Grid>
@@ -131,6 +146,7 @@
                         </Grid>
                     </Grid>
                 </GroupBox>
+
             </StackPanel>
         </Grid>
 
