@@ -16,6 +16,11 @@ public partial class GcaViewer : UserControl
 
     public event EventHandler<GcaDocument>? ZoneDragCommitted;
 
+    // ✅ NEW: selection forwarding
+    public event EventHandler<ushort?>? SelectedZoneChanged;
+
+    public ushort? SelectedZoneId => _suns.SelectedZoneId;
+
     public bool HasBackground => _ctx.Background != null;
 
     public GcaViewer()
@@ -37,6 +42,7 @@ public partial class GcaViewer : UserControl
 
         _suns = new SunOverlayManager(_ctx);
         _suns.ZoneDragCommitted += (_, snap) => ZoneDragCommitted?.Invoke(this, snap);
+        _suns.SelectedZoneChanged += (_, id) => SelectedZoneChanged?.Invoke(this, id);
 
         Loaded += (_, __) =>
         {
@@ -44,6 +50,9 @@ public partial class GcaViewer : UserControl
             source.AddHook(WndProc);
         };
     }
+
+    public void SetZoneNames(System.Collections.Generic.IReadOnlyDictionary<ushort, string> names)
+        => _suns.SetZoneNames(names);
 
     public void SetBackground(BitmapSource? bg)
     {
@@ -67,6 +76,35 @@ public partial class GcaViewer : UserControl
     public void LoadDocument(GcaDocument? doc)
     {
         _suns.SetDocument(doc);
+    }
+
+    public bool SelectZoneById(ushort id) => _suns.SelectZoneById(id);
+
+    public void ClearSelection() => _suns.ClearSelectionPublic();
+
+    /// <summary>
+    /// Retourne le centre du viewport en coordonnées image (pixels 0..1280/556),
+    /// en tenant compte du zoom + offsets scroll.
+    /// </summary>
+    public Point GetViewportCenterInImageCoords()
+    {
+        if (_ctx.Background == null)
+            return new Point(640, 278);
+
+        double zoom = ZoomScale.ScaleX;
+        if (zoom <= 0.0001) zoom = 1.0;
+
+        double cxView = EditorScroll.HorizontalOffset + (EditorScroll.ViewportWidth / 2.0);
+        double cyView = EditorScroll.VerticalOffset + (EditorScroll.ViewportHeight / 2.0);
+
+        double cxImg = cxView / zoom;
+        double cyImg = cyView / zoom;
+
+        // clamp dans l'image
+        cxImg = Math.Max(0, Math.Min(_ctx.Background.PixelWidth, cxImg));
+        cyImg = Math.Max(0, Math.Min(_ctx.Background.PixelHeight, cyImg));
+
+        return new Point(cxImg, cyImg);
     }
 
     public void SizeToHostAndFit(double hostWidth, double hostHeight)

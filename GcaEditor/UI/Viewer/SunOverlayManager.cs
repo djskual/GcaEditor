@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -15,24 +16,25 @@ public sealed class SunOverlayManager
     private readonly BitmapImage _sun;
     private readonly BitmapImage _sunSelected;
 
-    private readonly Dictionary<ushort, string> _zoneNames = new()
-    {
-        { 0, "Center Console" },
-        { 1, "Front Background Lighting" },
-        { 5, "Footwell" },
-        { 7, "Doors" },
-        { 9, "Roof" },
-    };
+    private Dictionary<ushort, string> _zoneNames = new();
 
     private Image? _selectedSun;
     private GcaZone? _selectedZone;
+
+    private readonly Dictionary<ushort, Image> _sunByZoneId = new();
 
     private GcaDocument? _doc;
 
     private GcaDocument? _dragBefore;
     private bool _dragMoved;
+    private bool _isDragging;
 
     public event EventHandler<GcaDocument>? ZoneDragCommitted;
+
+    // NEW: selection change event for MainWindow
+    public event EventHandler<ushort?>? SelectedZoneChanged;
+
+    public ushort? SelectedZoneId => _selectedZone?.Id;
 
     public SunOverlayManager(ViewerContext ctx)
     {
@@ -47,9 +49,19 @@ public sealed class SunOverlayManager
         // Click ailleurs -> deselect (mais pas si clic sur un sun)
         _ctx.ZoomRoot.PreviewMouseLeftButtonDown += (s, e) =>
         {
+            if (_isDragging) return; // ne pas clear pendant un drag
+
             if (e.OriginalSource is Image img && img.Tag is GcaZone) return;
             ClearSelection();
         };
+    }
+
+    public void SetZoneNames(IReadOnlyDictionary<ushort, string> zoneNames)
+    {
+        _zoneNames = zoneNames.ToDictionary(k => k.Key, v => v.Value);
+
+        if (_selectedZone != null)
+            _ctx.SelectedZoneText.Text = GetZoneName(_selectedZone.Id);
     }
 
     public void SetDocument(GcaDocument? doc)
@@ -61,7 +73,8 @@ public sealed class SunOverlayManager
     public void Render()
     {
         _ctx.SunLayer.Children.Clear();
-        ClearSelection();
+        _sunByZoneId.Clear();
+        ClearSelection(raiseEvent: true);
 
         if (_doc == null) return;
 
@@ -82,11 +95,31 @@ public sealed class SunOverlayManager
 
             SetSunPositionFromZone(sun, z, sunSize);
 
+            _sunByZoneId[z.Id] = sun;
+
             AttachDrag(sun, z, sunSize, halfZone);
 
             _ctx.SunLayer.Children.Add(sun);
         }
     }
+
+    public bool SelectZoneById(ushort id)
+    {
+        if (_doc == null) return false;
+
+        var zone = _doc.Zones.FirstOrDefault(z => z.Id == id);
+        if (zone == null) return false;
+
+        if (_sunByZoneId.TryGetValue(id, out var sun))
+        {
+            SelectSun(sun, zone, raiseEvent: true);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void ClearSelectionPublic() => ClearSelection(raiseEvent: true);
 
     private static void SetSunPositionFromZone(Image sun, GcaZone z, double sunSize)
     {
@@ -96,7 +129,7 @@ public sealed class SunOverlayManager
         Canvas.SetTop(sun, top);
     }
 
-    private void SelectSun(Image sun, GcaZone zone)
+    private void SelectSun(Image sun, GcaZone zone, bool raiseEvent)
     {
         if (_selectedSun == sun) return;
 
@@ -108,22 +141,30 @@ public sealed class SunOverlayManager
 
         _selectedSun.Source = _sunSelected;
         _ctx.SelectedZoneText.Text = GetZoneName(zone.Id);
+
+        if (raiseEvent)
+            SelectedZoneChanged?.Invoke(this, zone.Id);
     }
 
-    private void ClearSelection()
+    private void ClearSelection(bool raiseEvent = true)
     {
         if (_selectedSun != null)
             _selectedSun.Source = _sun;
 
         _selectedSun = null;
         _selectedZone = null;
+
         _ctx.SelectedZoneText.Text = "";
+
+        if (raiseEvent)
+            SelectedZoneChanged?.Invoke(this, null);
     }
 
     private string GetZoneName(ushort zoneId)
     {
         if (_zoneNames.TryGetValue(zoneId, out var name))
             return $"{zoneId} - {name}";
+
         return $"Zone {zoneId}";
     }
 
@@ -133,10 +174,12 @@ public sealed class SunOverlayManager
         System.Windows.Point startMouse = default;
         double startLeft = 0, startTop = 0;
 
+        sun.LostMouseCapture += (s, e) => { _isDragging = false; };
+
         sun.MouseLeftButtonDown += (s, e) =>
         {
-            // selection + preparation drag
-            SelectSun((Image)s, zone);
+            // Selection + preparation drag
+            SelectSun((Image)s, zone, raiseEvent: true);
 
             if (_doc != null)
             {
@@ -145,6 +188,7 @@ public sealed class SunOverlayManager
             }
 
             dragging = true;
+            _isDragging = true;
             startMouse = e.GetPosition(_ctx.SunLayer);
 
             startLeft = Canvas.GetLeft(sun);
@@ -153,9 +197,6 @@ public sealed class SunOverlayManager
             if (double.IsNaN(startTop)) startTop = 0;
 
             sun.CaptureMouse();
-
-            // Optionnel: ne pas marquer handled ici pour ne pas casser d'autres interactions
-            // e.Handled = true;
         };
 
         sun.MouseMove += (s, e) =>
@@ -194,6 +235,7 @@ public sealed class SunOverlayManager
         {
             if (!dragging) return;
             dragging = false;
+            _isDragging = false;
             sun.ReleaseMouseCapture();
             e.Handled = true;
 

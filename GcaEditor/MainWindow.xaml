@@ -7,17 +7,109 @@
         Height="900">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="330"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Margin="10">
-            <Button Content="Import Background (PNG 1280x556)" Click="ImportBackground_Click" Margin="0,0,0,6"/>
-            <Button Content="Open .gca" Click="OpenGca_Click" Margin="0,0,0,6"/>
-            <Button Content="Save .gca" Click="SaveGca_Click" Margin="0,0,0,12"/>
-        </StackPanel>
+        <!-- LEFT -->
+        <Grid Grid.Column="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="12"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Zone droite -->
+            <StackPanel Grid.Row="0">
+                <Button x:Name="ImportBackgroundButton" Content="Import Background (PNG 1280x556)" Click="ImportBackground_Click" Margin="0,0,0,6"/>
+                <Button x:Name="OpenGcaButton" Content="Open .gca" Click="OpenGca_Click" Margin="0,0,0,6" IsEnabled="False"/>
+                <Button x:Name="SaveGcaButton" Content="Save .gca" Click="SaveGca_Click" Margin="0,0,0,12" IsEnabled="False"/>
+            </StackPanel>
+
+            <GroupBox Grid.Row="2" Header="Zones" Padding="8" Height="220">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 4 lignes environ + scrollbar -->
+                    <ListBox x:Name="ZonesList"
+                    Height="110"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectionChanged="ZonesList_SelectionChanged"/>
+
+                    <Grid Grid.Row="2" Margin="0,4,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Labels -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Available zone IDs"
+                            FontSize="11"
+                            Foreground="Gray"
+                            VerticalAlignment="Bottom"/>
+
+                            <TextBlock
+                            Text="Custom ID"
+                            FontSize="11"
+                            Foreground="Gray"
+                            VerticalAlignment="Top" Margin="102,3,95,0"/>
+                        </Grid>
+
+                        <!-- Inputs + buttons -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Known / available zones -->
+                            <ComboBox x:Name="AddZoneCombo"
+                            Grid.Column="0"
+                            MinWidth="80"
+                            IsEditable="False" Margin="0,0,8,0" Grid.ColumnSpan="2"/>
+
+                            <!-- Custom ID -->
+                            <TextBox x:Name="CustomZoneIdBox"
+                            Grid.Column="2"
+                            Width="64"
+                            VerticalContentAlignment="Center"
+                            ToolTip="Custom Zone ID (0..65535)"
+                            Text="" Grid.ColumnSpan="2" Margin="0,0,8,0"/>
+
+                            <Button Grid.Column="4"
+                            Content="Add"
+                            Padding="10,4"
+                            Click="AddZone_Click"/>
+
+                            <Button Grid.Column="6"
+                            Content="Delete"
+                            Padding="10,4"
+                            Click="DeleteZone_Click"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </GroupBox>
+        </Grid>
+
+        <!-- RIGHT -->
         <Grid x:Name="ViewerHost" Grid.Column="1" Margin="12" SizeChanged="ViewerHost_SizeChanged">
             <controls:GcaViewer x:Name="Viewer"
                                 HorizontalAlignment="Right"
