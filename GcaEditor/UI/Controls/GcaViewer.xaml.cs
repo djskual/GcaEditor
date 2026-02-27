@@ -13,10 +13,13 @@ public partial class GcaViewer : UserControl
     private readonly ViewerContext _ctx;
     private readonly ZoomController _zoom;
     private readonly SunOverlayManager _suns;
+    private readonly AmbientImageOverlay _ambient;
+
+    private GcaDocument? _doc;
 
     public event EventHandler<GcaDocument>? ZoneDragCommitted;
 
-    // ✅ NEW: selection forwarding
+    // NEW: selection forwarding
     public event EventHandler<ushort?>? SelectedZoneChanged;
 
     public ushort? SelectedZoneId => _suns.SelectedZoneId;
@@ -43,6 +46,8 @@ public partial class GcaViewer : UserControl
         _suns = new SunOverlayManager(_ctx);
         _suns.ZoneDragCommitted += (_, snap) => ZoneDragCommitted?.Invoke(this, snap);
         _suns.SelectedZoneChanged += (_, id) => SelectedZoneChanged?.Invoke(this, id);
+
+        _ambient = new AmbientImageOverlay(_ctx);
 
         Loaded += (_, __) =>
         {
@@ -75,7 +80,47 @@ public partial class GcaViewer : UserControl
 
     public void LoadDocument(GcaDocument? doc)
     {
+        _doc = doc;
         _suns.SetDocument(doc);
+        RenderAmbientFromDoc();
+    }
+
+    // ===== Ambient images API =====
+
+    public BitmapSource LoadAndConvertAmbientMask(string path) => _ambient.LoadAndConvertMask(path);
+
+    public void SetAmbientSlot(int index, BitmapSource bitmap)
+    {
+        _ambient.SetSlot(index, bitmap);
+        RenderAmbientFromDoc();
+    }
+
+    public void ClearAmbientSlot(int index)
+    {
+        _ambient.ClearSlot(index);
+        RenderAmbientFromDoc();
+    }
+
+    public void ClearAllAmbient()
+    {
+        _ambient.ClearAll();
+    }
+
+    public bool HasAmbientSlot(int index) => _ambient.HasSlot(index);
+
+    public bool IsAmbientIdPositionedInDoc(int index)
+        => _doc?.Images.Any(i => i.Id == index) == true;
+
+    private void RenderAmbientFromDoc()
+    {
+        if (_doc == null)
+        {
+            _ambient.RenderAtPositions(Array.Empty<(int index, int x, int y)>());
+            return;
+        }
+
+        var positions = _doc.Images.Select(i => ((int)i.Id, (int)i.X, (int)i.Y));
+        _ambient.RenderAtPositions(positions);
     }
 
     public bool SelectZoneById(ushort id) => _suns.SelectZoneById(id);
@@ -83,7 +128,7 @@ public partial class GcaViewer : UserControl
     public void ClearSelection() => _suns.ClearSelectionPublic();
 
     /// <summary>
-    /// Retourne le centre du viewport en coordonnées image (pixels 0..1280/556),
+    /// Retourne le centre du viewport en coordonnees image (pixels 0..1280/556),
     /// en tenant compte du zoom + offsets scroll.
     /// </summary>
     public Point GetViewportCenterInImageCoords()

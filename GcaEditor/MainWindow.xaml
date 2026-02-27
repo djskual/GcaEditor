@@ -25,88 +25,113 @@
                 <Button x:Name="SaveGcaButton" Content="Save .gca" Click="SaveGca_Click" Margin="0,0,0,12" IsEnabled="False"/>
             </StackPanel>
 
-            <GroupBox Grid.Row="2" Header="Zones" Padding="8" Height="220">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- 4 lignes environ + scrollbar -->
-                    <ListBox x:Name="ZonesList"
-                    Height="110"
-                    ScrollViewer.VerticalScrollBarVisibility="Auto"
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    SelectionChanged="ZonesList_SelectionChanged"/>
-
-                    <Grid Grid.Row="2" Margin="0,4,0,0">
+            <StackPanel Grid.Row="2">
+                <!-- ZONES -->
+                <GroupBox Header="Zones" Padding="8" Height="200" Margin="0,0,0,10">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Labels -->
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <!-- 4 lignes environ + scrollbar -->
+                        <ListBox x:Name="ZonesList"
+                                 Height="92"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 SelectionChanged="ZonesList_SelectionChanged"/>
 
-                            <TextBlock Text="Available zone IDs"
-                            FontSize="11"
-                            Foreground="Gray"
-                            VerticalAlignment="Bottom"/>
+                        <Grid Grid.Row="2" Margin="0,4,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                            <TextBlock
-                            Text="Custom ID"
-                            FontSize="11"
-                            Foreground="Gray"
-                            VerticalAlignment="Top" Margin="102,3,95,0"/>
-                        </Grid>
+                            <!-- Labels -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                        <!-- Inputs + buttons -->
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                                <TextBlock Text="Available" FontSize="11" Foreground="Gray"/>
+                                <TextBlock Grid.Column="2" Text="Custom" FontSize="11" Foreground="Gray"/>
+                            </Grid>
 
-                            <!-- Known / available zones -->
-                            <ComboBox x:Name="AddZoneCombo"
-                            Grid.Column="0"
-                            MinWidth="80"
-                            IsEditable="False" Margin="0,0,8,0" Grid.ColumnSpan="2"/>
+                            <!-- Inputs + buttons -->
+                            <Grid Grid.Row="1" Margin="0,2,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                            <!-- Custom ID -->
-                            <TextBox x:Name="CustomZoneIdBox"
-                            Grid.Column="2"
-                            Width="64"
-                            VerticalContentAlignment="Center"
-                            ToolTip="Custom Zone ID (0..65535)"
-                            Text="" Grid.ColumnSpan="2" Margin="0,0,8,0"/>
+                                <ComboBox x:Name="AddZoneCombo" Grid.Column="0" MinWidth="120" IsEditable="False"/>
 
-                            <Button Grid.Column="4"
-                            Content="Add"
-                            Padding="10,4"
-                            Click="AddZone_Click"/>
+                                <TextBox x:Name="CustomZoneIdBox"
+                                         Grid.Column="2"
+                                         Width="64"
+                                         VerticalContentAlignment="Center"
+                                         ToolTip="Custom Zone ID (0..65535)"
+                                         Text=""/>
 
-                            <Button Grid.Column="6"
-                            Content="Delete"
-                            Padding="10,4"
-                            Click="DeleteZone_Click"/>
+                                <Button Grid.Column="4" Content="Add" Padding="10,4" Click="AddZone_Click"/>
+                                <Button Grid.Column="6" Content="Delete" Padding="10,4" Click="DeleteZone_Click"/>
+                            </Grid>
                         </Grid>
                     </Grid>
-                </Grid>
-            </GroupBox>
+                </GroupBox>
+
+                <!-- AMBIENT IMAGES -->
+                <GroupBox Header="Ambient images" Padding="8" Height="320">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Drive side selection -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <TextBlock Text="Side:" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <RadioButton x:Name="SideLhd" Content="LHD" IsChecked="True" Margin="0,0,10,0" Checked="Side_Checked"/>
+                            <RadioButton x:Name="SideRhd" Content="RHD" Checked="Side_Checked"/>
+                        </StackPanel>
+
+                        <!-- List of slots -->
+                        <ListBox x:Name="AmbientList"
+                                 Grid.Row="2"
+                                 Height="150"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+
+                        <!-- Buttons -->
+                        <Grid Grid.Row="6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" Content="Import file..." Click="ImportAmbientFile_Click" Padding="10,4"/>
+                            <Button Grid.Column="2" Content="Import folder..." Click="ImportAmbientFolder_Click" Padding="10,4"/>
+                            <Button Grid.Column="4" Content="Clear" Click="ClearAmbient_Click" Padding="10,4"/>
+                        </Grid>
+                    </Grid>
+                </GroupBox>
+            </StackPanel>
         </Grid>
 
         <!-- RIGHT -->

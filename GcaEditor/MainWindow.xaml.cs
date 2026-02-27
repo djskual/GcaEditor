@@ -1,10 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using GcaEditor.UI.Interop;
 using GcaEditor.Data;
 using GcaEditor.IO;
 using GcaEditor.Models;
@@ -22,6 +24,21 @@ public partial class MainWindow : Window
     private readonly ZoneCatalog _zoneCatalog;
 
     private bool _suppressListSelection;
+    private bool _uiReady = false;
+
+    // ===== Ambient images =====
+    private enum DriveSide { LHD, RHD }
+    private DriveSide _side = DriveSide.LHD;
+
+    // We keep separate slots for LHD/RHD so you can switch without losing imports.
+    private readonly BitmapSource?[] _ambientLhd = new BitmapSource?[23];
+    private readonly BitmapSource?[] _ambientRhd = new BitmapSource?[23];
+    private readonly string?[] _ambientLhdName = new string?[23];
+    private readonly string?[] _ambientRhdName = new string?[23];
+
+    private static readonly Regex FeatureNameRx = new(
+        @"^Feature_(LHD|RHD)_(\d{1,2})\.png$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     public MainWindow()
     {
@@ -79,6 +96,21 @@ public partial class MainWindow : Window
         SaveGcaButton.IsEnabled = false;
 
         RefreshZonesUi();
+
+        // initialise l'etat ambient selon les radios (si deja creees)
+        //_side = (SideRhd?.IsChecked == true) ? DriveSide.RHD : DriveSide.LHD;
+        //ApplyAmbientSideToViewer();
+
+        Loaded += (_, __) =>
+        {
+            _uiReady = true;
+
+            // etat side initial sans crash
+            _side = (SideRhd?.IsChecked == true) ? DriveSide.RHD : DriveSide.LHD;
+
+            ApplyAmbientSideToViewer();
+            RefreshAmbientUi();
+        };
     }
 
     private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -161,6 +193,9 @@ public partial class MainWindow : Window
         SaveGcaButton.IsEnabled = true;
 
         RefreshZonesUi();
+
+        // refresh ambient status (some IDs may already be positioned in the GCA)
+        RefreshAmbientUi();
     }
 
     private void SaveGca_Click(object sender, RoutedEventArgs e)
@@ -182,6 +217,188 @@ public partial class MainWindow : Window
 
         GcaCodec.Save(sfd.FileName, _doc);
         MessageBox.Show("GCA sauvegarde.");
+    }
+
+    // ===== Ambient images UI =====
+
+    private void Side_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!_uiReady || Viewer == null)
+            return;
+
+        if (sender is RadioButton rb)
+            _side = (rb.Name == "SideRhd") ? DriveSide.RHD : DriveSide.LHD;
+        else
+            _side = (SideRhd?.IsChecked == true) ? DriveSide.RHD : DriveSide.LHD;
+
+        ApplyAmbientSideToViewer();
+        RefreshAmbientUi();
+    }
+
+    private void ImportAmbientFile_Click(object sender, RoutedEventArgs e)
+    {
+        var ofd = new OpenFileDialog
+        {
+            Filter = "PNG (*.png)|*.png",
+            Title = "Import ambient image (Feature_LHD_#.png / Feature_RHD_#.png)"
+        };
+        if (ofd.ShowDialog() != true) return;
+
+        if (!TryParseFeatureName(System.IO.Path.GetFileName(ofd.FileName), out var side, out var index))
+        {
+            MessageBox.Show("Nom invalide. Attendu: Feature_LHD_0.png .. Feature_LHD_22.png (ou RHD).", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var bmp = Viewer.LoadAndConvertAmbientMask(ofd.FileName);
+        StoreAmbientSlot(side, index, bmp, System.IO.Path.GetFileName(ofd.FileName));
+
+        // If this matches current side, push to viewer immediately
+        if (side == _side)
+            Viewer.SetAmbientSlot(index, bmp);
+
+        RefreshAmbientUi();
+    }
+
+    private void ImportAmbientFolder_Click(object sender, RoutedEventArgs e)
+    {
+        // WPF-friendly folder picker (no WinForms dependency):
+        // Use an OpenFileDialog trick to let the user select a folder.
+        var folder = FolderPicker.PickFolder("Select folder containing Feature_LHD_#.png / Feature_RHD_#.png"); 
+        if (string.IsNullOrWhiteSpace(folder))
+            return;
+
+        var files = System.IO.Directory.GetFiles(folder, "*.png", System.IO.SearchOption.TopDirectoryOnly);
+
+        int imported = 0;
+        foreach (var f in files)
+        {
+            var name = System.IO.Path.GetFileName(f);
+            if (!TryParseFeatureName(name, out var side, out var index))
+                continue;
+
+            // filter by selected side (user-friendly)
+            if (side != _side)
+                continue;
+
+            try
+            {
+                var bmp = Viewer.LoadAndConvertAmbientMask(f);
+                StoreAmbientSlot(side, index, bmp, name);
+                Viewer.SetAmbientSlot(index, bmp);
+                imported++;
+            }
+            catch
+            {
+                // Ignore a single broken file
+            }
+        }
+
+        if (imported == 0)
+            MessageBox.Show($"Aucune image trouvée pour {_side}. Attendu: Feature_{_side}_0.png .. Feature_{_side}_22.png");
+
+        RefreshAmbientUi();
+        MessageBox.Show($"Imported {imported} image(s) for {_side}.");
+    }
+
+    private void ClearAmbient_Click(object sender, RoutedEventArgs e)
+    {
+        if (AmbientList.SelectedItem is not AmbientSlotItem it)
+        {
+            MessageBox.Show("Selectionne un slot (0..22) dans la liste.");
+            return;
+        }
+
+        ClearAmbientSlot(_side, it.Index);
+        Viewer.ClearAmbientSlot(it.Index);
+        RefreshAmbientUi();
+    }
+
+    private void ApplyAmbientSideToViewer()
+    {
+        if (!_uiReady || Viewer == null)
+            return; 
+        
+        Viewer.ClearAllAmbient();
+
+        var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null)
+                Viewer.SetAmbientSlot(i, slots[i]!);
+        }
+    }
+
+    private void RefreshAmbientUi()
+    {
+        AmbientList.Items.Clear();
+
+        var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
+        var names = (_side == DriveSide.LHD) ? _ambientLhdName : _ambientRhdName;
+
+        for (int i = 0; i <= 22; i++)
+        {
+            bool loaded = slots[i] != null;
+            bool positioned = Viewer.IsAmbientIdPositionedInDoc(i);
+
+            string status = loaded
+                ? (positioned ? "Loaded + positioned" : "Loaded (pending)" )
+                : (positioned ? "[GCA] positioned (missing file)" : "Empty");
+
+            string file = loaded && !string.IsNullOrWhiteSpace(names[i]) ? names[i]! : "";
+
+            AmbientList.Items.Add(new AmbientSlotItem
+            {
+                Index = i,
+                Display = $"{i:00} - {status} {file}".TrimEnd()
+            });
+        }
+    }
+
+    private static bool TryParseFeatureName(string filename, out DriveSide side, out int index)
+    {
+        side = DriveSide.LHD;
+        index = -1;
+
+        var m = FeatureNameRx.Match(filename);
+        if (!m.Success) return false;
+
+        side = m.Groups[1].Value.Equals("RHD", StringComparison.OrdinalIgnoreCase)
+            ? DriveSide.RHD
+            : DriveSide.LHD;
+
+        if (!int.TryParse(m.Groups[2].Value, out index))
+            return false;
+
+        return index >= 0 && index <= 22;
+    }
+
+    private void StoreAmbientSlot(DriveSide side, int index, BitmapSource bmp, string filename)
+    {
+        if (side == DriveSide.LHD)
+        {
+            _ambientLhd[index] = bmp;
+            _ambientLhdName[index] = filename;
+        }
+        else
+        {
+            _ambientRhd[index] = bmp;
+            _ambientRhdName[index] = filename;
+        }
+    }
+
+    private void ClearAmbientSlot(DriveSide side, int index)
+    {
+        if (side == DriveSide.LHD)
+        {
+            _ambientLhd[index] = null;
+            _ambientLhdName[index] = null;
+        }
+        else
+        {
+            _ambientRhd[index] = null;
+            _ambientRhdName[index] = null;
+        }
     }
 
     // ===== Zones UI =====
@@ -291,7 +508,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        // Securite: interdire doublon d'ID dans le GCA (recommandé)
+        // Securite: interdire doublon d'ID dans le GCA (recommande)
         if (_doc.Zones.Any(z => z.Id == zoneId.Value))
         {
             MessageBox.Show($"La zone {zoneId.Value} existe deja dans ce GCA. Supprime-la avant, ou choisis un autre ID.");
@@ -371,6 +588,14 @@ public partial class MainWindow : Window
     private sealed class ZoneListItem
     {
         public ushort Id { get; init; }
+        public string Display { get; init; } = "";
+
+        public override string ToString() => Display;
+    }
+
+    private sealed class AmbientSlotItem
+    {
+        public int Index { get; init; }
         public string Display { get; init; } = "";
 
         public override string ToString() => Display;
