@@ -50,7 +50,6 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- 4 lignes environ + scrollbar -->
                         <ListBox x:Name="ZonesList"
                                  Height="92"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -63,7 +62,6 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <!-- Labels (colonnes IDENTIQUES à la grille Inputs) -->
                             <Grid Grid.Row="2" Margin="0,6,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -75,25 +73,23 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Available -->
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Available" FontSize="11" Foreground="Gray" Margin="0,0,0,2"/>
                                     <ComboBox x:Name="AddZoneCombo"
-                                    Height="28"
-                                    VerticalContentAlignment="Center"
-                                    Padding="6,2"
-                                    IsEditable="False"/>
+                                              Height="28"
+                                              VerticalContentAlignment="Center"
+                                              Padding="6,2"
+                                              IsEditable="False"/>
                                 </StackPanel>
 
-                                <!-- Custom -->
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Custom" FontSize="11" Foreground="Gray" Margin="0,0,0,2"/>
                                     <TextBox x:Name="CustomZoneIdBox"
-                                    Width="70"
-                                    Height="28"
-                                    VerticalContentAlignment="Center"
-                                    Padding="6,2"
-                                    ToolTip="Custom Zone ID (0..65535)"/>
+                                             Width="70"
+                                             Height="28"
+                                             VerticalContentAlignment="Center"
+                                             Padding="6,2"
+                                             ToolTip="Custom Zone ID (0..65535)"/>
                                 </StackPanel>
 
                                 <Button Grid.Column="4" Content="Add" Height="28" Padding="10,4" VerticalAlignment="Bottom" Click="AddZone_Click"/>
@@ -127,23 +123,66 @@
                         <ListBox x:Name="AmbientList"
                                  Grid.Row="2"
                                  Height="150"
+                                 SelectionChanged="AmbientList_SelectionChanged"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
 
-                        <!-- Buttons -->
-                        <Grid Grid.Row="6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="AmbientPlacementHint"
+                                   Grid.Row="4"
+                                   Margin="0,2,0,0"
+                                   Foreground="Gray"
+                                   Text="Placement mode: click in the viewer to place the selected ambient image (ESC to cancel)."
+                                   TextWrapping="Wrap"
+                                   Visibility="Collapsed"/>
 
-                            <Button Grid.Column="0" Content="Import file..." Click="ImportAmbientFile_Click" Padding="10,4"/>
-                            <Button Grid.Column="2" Content="Import folder..." Click="ImportAmbientFolder_Click" Padding="10,4"/>
-                            <Button Grid.Column="4" Content="Clear" Click="ClearAmbient_Click" Padding="10,4"/>
-                        </Grid>
+                        <!-- Buttons: 2 lines -->
+                        <StackPanel Grid.Row="6" Orientation="Vertical">
+
+                            <!-- Line 1: import file / import folder / delete -->
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Import file..."
+                                        Click="ImportAmbientFile_Click"
+                                        Padding="10,4"
+                                        MinWidth="90"
+                                        Margin="0,0,6,0"/>
+
+                                <Button Content="Import folder..."
+                                        Click="ImportAmbientFolder_Click"
+                                        Padding="10,4"
+                                        MinWidth="90"
+                                        Margin="0,0,6,0"/>
+
+                                <Button Content="Delete"
+                                        Click="ClearAmbient_Click"
+                                        Padding="10,4"
+                                        MinWidth="80"/>
+                            </StackPanel>
+
+                            <!-- Line 2: hide/show / place / cancel -->
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button x:Name="ToggleAmbientButton"
+                                        Content="Hide/Show"
+                                        Click="ToggleAmbientVisibility_Click"
+                                        Padding="10,4"
+                                        MinWidth="90"
+                                        Margin="0,0,6,0"/>
+
+                                <Button x:Name="PlaceAmbientButton"
+                                        Content="Place"
+                                        Click="PlaceAmbient_Click"
+                                        Padding="10,4"
+                                        MinWidth="90"
+                                        Margin="0,0,6,0"/>
+
+                                <Button x:Name="CancelPlaceAmbientButton"
+                                        Content="Cancel"
+                                        Click="CancelPlaceAmbient_Click"
+                                        Padding="10,4"
+                                        MinWidth="90"
+                                        IsEnabled="False"/>
+                            </StackPanel>
+
+                        </StackPanel>
                     </Grid>
                 </GroupBox>
 

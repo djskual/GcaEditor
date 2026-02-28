@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using GcaEditor.Models;
@@ -15,20 +16,23 @@ public partial class GcaViewer : UserControl
     private readonly SunOverlayManager _suns;
     private readonly AmbientImageOverlay _ambient;
 
+    private int? _ambientPlacementIndex = null;
+
     private GcaDocument? _doc;
 
     public event EventHandler<GcaDocument>? ZoneDragCommitted;
-
-    // NEW: selection forwarding
     public event EventHandler<ushort?>? SelectedZoneChanged;
+    public event EventHandler<Point>? AmbientPlaceRequested;
 
     public ushort? SelectedZoneId => _suns.SelectedZoneId;
-
     public bool HasBackground => _ctx.Background != null;
 
     public GcaViewer()
     {
         InitializeComponent();
+
+        // Placement mode uses a dedicated hit layer on top of the viewer.
+        PlacementHitLayer.MouseLeftButtonDown += PlacementHitLayer_MouseLeftButtonDown;
 
         _ctx = new ViewerContext(
             EditorScroll,
@@ -85,8 +89,7 @@ public partial class GcaViewer : UserControl
         RenderAmbientFromDoc();
     }
 
-    // ===== Ambient images API =====
-
+    // Ambient images API
     public BitmapSource LoadAndConvertAmbientMask(string path) => _ambient.LoadAndConvertMask(path);
 
     public void SetAmbientSlot(int index, BitmapSource bitmap)
@@ -101,9 +104,52 @@ public partial class GcaViewer : UserControl
         RenderAmbientFromDoc();
     }
 
-    public void ClearAllAmbient()
+    public void ClearAllAmbient() => _ambient.ClearAll();
+
+    public void SetAmbientPlacementMode(int index)
     {
-        _ambient.ClearAll();
+        _ambientPlacementIndex = index;
+        Cursor = Cursors.Cross;
+
+        // Freeze interactions with overlays while placing.
+        SunLayer.IsHitTestVisible = false;
+        PlacementHitLayer.Visibility = Visibility.Visible;
+    }
+
+    public void ClearAmbientPlacementMode()
+    {
+        _ambientPlacementIndex = null;
+        Cursor = null;
+
+        SunLayer.IsHitTestVisible = true;
+        PlacementHitLayer.Visibility = Visibility.Collapsed;
+    }
+
+    private void PlacementHitLayer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_ambientPlacementIndex == null)
+            return;
+
+        // Click position in ScrollViewer viewport + scroll offsets
+        var posViewport = e.GetPosition(EditorScroll);
+
+        double zoom = ZoomScale.ScaleX;
+        if (zoom <= 0.0001) zoom = 1.0;
+
+        double xView = posViewport.X + EditorScroll.HorizontalOffset;
+        double yView = posViewport.Y + EditorScroll.VerticalOffset;
+
+        double xImg = xView / zoom;
+        double yImg = yView / zoom;
+
+        if (_ctx.Background != null)
+        {
+            xImg = Math.Max(0, Math.Min(_ctx.Background.PixelWidth, xImg));
+            yImg = Math.Max(0, Math.Min(_ctx.Background.PixelHeight, yImg));
+        }
+
+        AmbientPlaceRequested?.Invoke(this, new Point(xImg, yImg));
+        e.Handled = true;
     }
 
     public bool HasAmbientSlot(int index) => _ambient.HasSlot(index);
@@ -124,13 +170,8 @@ public partial class GcaViewer : UserControl
     }
 
     public bool SelectZoneById(ushort id) => _suns.SelectZoneById(id);
-
     public void ClearSelection() => _suns.ClearSelectionPublic();
 
-    /// <summary>
-    /// Retourne le centre du viewport en coordonnees image (pixels 0..1280/556),
-    /// en tenant compte du zoom + offsets scroll.
-    /// </summary>
     public Point GetViewportCenterInImageCoords()
     {
         if (_ctx.Background == null)
@@ -145,7 +186,6 @@ public partial class GcaViewer : UserControl
         double cxImg = cxView / zoom;
         double cyImg = cyView / zoom;
 
-        // clamp dans l'image
         cxImg = Math.Max(0, Math.Min(_ctx.Background.PixelWidth, cxImg));
         cyImg = Math.Max(0, Math.Min(_ctx.Background.PixelHeight, cyImg));
 
