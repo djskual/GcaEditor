@@ -1,7 +1,5 @@
 using System;
-using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media;
 
 namespace GcaEditor.UI.Controls;
 
@@ -11,7 +9,7 @@ public partial class GcaViewer
 
     private void AttachHwndHook()
     {
-        var source = (HwndSource)PresentationSource.FromVisual(this)!;
+        var source = (HwndSource)System.Windows.PresentationSource.FromVisual(this)!;
         source.AddHook(WndProc);
     }
 

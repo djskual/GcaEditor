@@ -20,7 +20,7 @@ public partial class MainWindow : Window
     private GcaDocument? _doc;
     private string? _gcaPath;
 
-    private readonly UndoRedoStack<GcaDocument> _history;
+    private readonly UndoRedoStack<EditorState> _history;
     private readonly ZoneCatalog _zoneCatalog;
 
     private bool _suppressListSelection;
@@ -31,7 +31,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _zoneCatalog = ZoneCatalog.LoadOrDefault();
-        _history = new UndoRedoStack<GcaDocument>(d => d.DeepClone());
+        _history = new UndoRedoStack<EditorState>(s => s.DeepClone());
 
         WireViewerEvents();
         WireWindowEvents();
@@ -60,7 +60,7 @@ public partial class MainWindow : Window
         Viewer.ZoneDragCommitted += (_, beforeSnapshot) =>
         {
             if (_doc == null) return;
-            _history.PushUndoSnapshot(beforeSnapshot);
+            _history.PushUndoSnapshot(CaptureState(beforeSnapshot));
             RefreshZonesUi();
         };
 

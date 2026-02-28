@@ -132,34 +132,40 @@ public partial class MainWindow
 
         int idx = it.Index;
 
-        // If deleting the one currently in placement mode, exit first
         if (_placingAmbientIndex == idx)
             ExitAmbientPlacementMode();
 
-        // 1) Always clear runtime slot (file)
+        bool loaded = false;
+        var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
+        if (idx >= 0 && idx <= 22)
+            loaded = slots[idx] != null;
+
+        bool positioned = _doc != null && _doc.Images.Any(x => x.Id == (ushort)idx);
+
+        // Nothing to delete
+        if (!loaded && !positioned)
+            return;
+
+        // Push snapshot BEFORE any changes so delete is undoable for both pending and native images
+        _history.PushUndoSnapshot(CaptureState());
+
+        // Always clear runtime slot for current side
         ClearAmbientSlot(_side, idx);
         Viewer.ClearAmbientSlot(idx);
 
-        // 2) If doc has an entry for this ID:
+        // If there is a doc entry for this ID:
         // - keep it if it existed when the GCA was opened (Missing expected)
         // - remove it if it was created by user in this session (Empty expected)
-        if (_doc != null)
+        if (_doc != null && positioned)
         {
-            bool positioned = _doc.Images.Any(x => x.Id == idx);
-            if (positioned)
+            bool wasInitial = _ambientIdsInitiallyInDoc.Contains(idx);
+            if (!wasInitial)
             {
-                bool wasInitial = _ambientIdsInitiallyInDoc.Contains(idx);
-                if (!wasInitial)
-                {
-                    var img = _doc.Images.FirstOrDefault(x => x.Id == idx);
-                    if (img != null)
-                    {
-                        _history.PushUndoSnapshot(_doc);
-                        _doc.Images.Remove(img);
+                var img = _doc.Images.FirstOrDefault(x => x.Id == (ushort)idx);
+                if (img != null)
+                    _doc.Images.Remove(img);
 
-                        Viewer.LoadDocument(_doc);
-                    }
-                }
+                Viewer.LoadDocument(_doc);
             }
         }
 
@@ -291,7 +297,7 @@ public partial class MainWindow
             return;
 
         // Undo snapshot BEFORE mutation
-        _history.PushUndoSnapshot(_doc);
+        _history.PushUndoSnapshot(CaptureState());
 
         // Create or update image entry in doc
         var existing = _doc.Images.FirstOrDefault(i => i.Id == (ushort)idxSlot);

@@ -123,7 +123,7 @@ public partial class MainWindow
         }
 
         // Undo snapshot BEFORE mutation
-        _history.PushUndoSnapshot(_doc);
+        _history.PushUndoSnapshot(CaptureState());
 
         // Place at current viewport center in image coords
         var center = Viewer.GetViewportCenterInImageCoords();
@@ -154,7 +154,7 @@ public partial class MainWindow
         }
 
         // Undo snapshot BEFORE mutation
-        _history.PushUndoSnapshot(_doc);
+        _history.PushUndoSnapshot(CaptureState());
 
         _doc.Zones.RemoveAll(z => z.Id == sel.Value);
 
