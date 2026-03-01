@@ -371,6 +371,14 @@ private void ExitAmbientMoveMode()
     UpdateAmbientButtons();
 }
 
+    private void UpdateAmbientAvailability()
+    {
+        bool hasBg = Viewer != null && Viewer.HasBackground;
+        bool hasGca = _doc != null;
+
+        AmbientGroup.IsEnabled = hasBg && hasGca;
+    }
+
     private void UpdateAmbientButtons()
     {
         if (!_uiReady || Viewer == null) return;

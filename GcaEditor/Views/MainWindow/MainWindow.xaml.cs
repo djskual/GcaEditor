@@ -47,6 +47,7 @@ public partial class MainWindow : Window
             _uiReady = true;
 
             InitAmbientUiOnLoaded();
+            UpdateAmbientAvailability();
         };
     }
 

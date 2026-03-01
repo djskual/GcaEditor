@@ -30,6 +30,8 @@ public partial class MainWindow
 
         // Now we can open a GCA
         OpenGcaButton.IsEnabled = true;
+
+        UpdateAmbientAvailability();
     }
 
     private void ViewerHost_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -67,6 +69,8 @@ public partial class MainWindow
 
         // Refresh ambient status (some IDs may already be positioned in the GCA)
         RefreshAmbientUi();
+
+        UpdateAmbientAvailability();
     }
 
     private void SaveGca_Click(object sender, RoutedEventArgs e)

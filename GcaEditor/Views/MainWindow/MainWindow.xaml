@@ -110,7 +110,7 @@
                 </GroupBox>
 
                 <!-- AMBIENT IMAGES -->
-                <GroupBox Header="Ambient images" Padding="8" Height="360">
+                <GroupBox x:Name="AmbientGroup" Header="Ambient images" Padding="8" Height="360">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
