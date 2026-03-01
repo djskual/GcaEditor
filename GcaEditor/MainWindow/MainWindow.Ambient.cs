@@ -1,3 +1,5 @@
+using GcaEditor.Models;
+using GcaEditor.UI.Interop;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -5,9 +7,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using GcaEditor.UI.Interop;
-using GcaEditor.Models;
 
 namespace GcaEditor;
 
@@ -351,27 +352,27 @@ public partial class MainWindow
     }
 
 
-private void EnterAmbientMoveMode(int index)
-{
-    if (!_uiReady || Viewer == null) return;
+    private void EnterAmbientMoveMode(int index)
+    {
+        if (!_uiReady || Viewer == null) return;
 
-    _movingAmbientIndex = index;
-    Viewer.SetAmbientMoveMode(index);
+        _movingAmbientIndex = index;
+        Viewer.SetAmbientMoveMode(index);
 
-    AmbientMoveHint.Visibility = Visibility.Visible;
-    UpdateAmbientButtons();
-}
+        AmbientMoveHint.Visibility = Visibility.Visible;
+        UpdateAmbientButtons();
+    }
 
-private void ExitAmbientMoveMode()
-{
-    if (!_uiReady || Viewer == null) return;
+    private void ExitAmbientMoveMode()
+    {
+        if (!_uiReady || Viewer == null) return;
 
-    _movingAmbientIndex = null;
-    Viewer.ClearAmbientMoveMode();
+        _movingAmbientIndex = null;
+        Viewer.ClearAmbientMoveMode();
 
-    AmbientMoveHint.Visibility = Visibility.Collapsed;
-    UpdateAmbientButtons();
-}
+        AmbientMoveHint.Visibility = Visibility.Collapsed;
+        UpdateAmbientButtons();
+    }
 
     private void UpdateAmbientAvailability()
     {
@@ -511,38 +512,38 @@ private void ExitAmbientMoveMode()
     }
 
 
-private void MoveAmbient_Click(object sender, RoutedEventArgs e)
-{
-    if (!_uiReady || Viewer == null) return;
-
-    if (AmbientList.SelectedItem is not AmbientSlotItem it)
+    private void MoveAmbient_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
-        return;
+        if (!_uiReady || Viewer == null) return;
+
+        if (AmbientList.SelectedItem is not AmbientSlotItem it)
+        {
+            MessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
+            return;
+        }
+
+        int idx = it.Index;
+
+        var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
+        bool loaded = (idx >= 0 && idx <= 22 && slots[idx] != null);
+        bool positioned = Viewer.IsAmbientIdPositionedInDoc(idx);
+
+        if (!loaded || !positioned)
+        {
+            MessageBox.Show("Move est disponible uniquement si l image est loaded + positioned.");
+            return;
+        }
+
+        // Exit placement if needed
+        if (_placingAmbientIndex != null)
+            ExitAmbientPlacementMode();
+
+        EnterAmbientMoveMode(idx);
     }
 
-    int idx = it.Index;
-
-    var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
-    bool loaded = (idx >= 0 && idx <= 22 && slots[idx] != null);
-    bool positioned = Viewer.IsAmbientIdPositionedInDoc(idx);
-
-    if (!loaded || !positioned)
+    private void CancelMoveAmbient_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Move est disponible uniquement si l image est loaded + positioned.");
-        return;
+        ExitAmbientMoveMode();
     }
-
-    // Exit placement if needed
-    if (_placingAmbientIndex != null)
-        ExitAmbientPlacementMode();
-
-    EnterAmbientMoveMode(idx);
-}
-
-private void CancelMoveAmbient_Click(object sender, RoutedEventArgs e)
-{
-    ExitAmbientMoveMode();
-}
 
 }

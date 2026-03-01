@@ -54,6 +54,7 @@ public partial class MainWindow : Window
     private void WireWindowEvents()
     {
         PreviewKeyDown += MainWindow_PreviewKeyDown;
+        PreviewKeyUp += MainWindow_PreviewKeyUp;
     }
 
     private void WireViewerEvents()
