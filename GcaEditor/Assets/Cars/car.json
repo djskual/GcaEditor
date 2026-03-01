@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "root": "Assets/Cars",
+  "mib_folders": {
+    "MIB25": "MIB25",
+    "MIB2": "MIB2"
+  },
+  "background": {
+    "lhd": "Interior_LHD.png",
+    "rhd": "Interior_RHD.png"
+  },
+  "feature": {
+    "lhd_pattern": "Feature_LHD_{index}.png",
+    "rhd_pattern": "Feature_RHD_{index}.png",
+    "count": 23
+  },
+  "cars": [
+    {
+      "id": "0200000000",
+      "name": "VW Golf 7 Generic",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0202070000",
+      "name": "VW Polo",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0203020603",
+      "name": "VW Tayron",
+      "available_mibs": [ "MIB25" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0203070001",
+      "name": "VW Golf 7",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0203070600",
+      "name": "VW Tiguan",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0204010600",
+      "name": "VW Atlas / Teramont",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0204080100",
+      "name": "VW Passat",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0205010100",
+      "name": "VW Unknown (0205010100)",
+      "available_mibs": [ "MIB25" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    }
+  ]
+}
