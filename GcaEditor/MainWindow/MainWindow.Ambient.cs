@@ -25,6 +25,7 @@ public partial class MainWindow
     private readonly bool[] _ambientVisibleRhd = Enumerable.Repeat(true, 23).ToArray();
 
     private int? _placingAmbientIndex = null;
+    private int? _movingAmbientIndex = null;
 
     private readonly HashSet<int> _ambientIdsInitiallyInDoc = new();
 
@@ -347,19 +348,49 @@ public partial class MainWindow
         UpdateAmbientButtons();
     }
 
+
+private void EnterAmbientMoveMode(int index)
+{
+    if (!_uiReady || Viewer == null) return;
+
+    _movingAmbientIndex = index;
+    Viewer.SetAmbientMoveMode(index);
+
+    AmbientMoveHint.Visibility = Visibility.Visible;
+    UpdateAmbientButtons();
+}
+
+private void ExitAmbientMoveMode()
+{
+    if (!_uiReady || Viewer == null) return;
+
+    _movingAmbientIndex = null;
+    Viewer.ClearAmbientMoveMode();
+
+    AmbientMoveHint.Visibility = Visibility.Collapsed;
+    UpdateAmbientButtons();
+}
+
     private void UpdateAmbientButtons()
     {
         if (!_uiReady || Viewer == null) return;
 
         bool placing = _placingAmbientIndex != null;
+        bool moving = _movingAmbientIndex != null;
 
         CancelPlaceAmbientButton.IsEnabled = placing;
         PlaceAmbientButton.Content = placing ? "Placing..." : "Place";
 
+        CancelMoveAmbientButton.IsEnabled = moving;
+        MoveAmbientButton.Content = moving ? "Moving..." : "Move";
+
         PlaceAmbientButton.IsEnabled = false;
+        MoveAmbientButton.IsEnabled = false;
+
         ToggleAmbientButton.IsEnabled = false;
         ToggleAmbientButton.Content = "Hide";
 
+        // Disable actions while moving
         if (AmbientList.SelectedItem is not AmbientSlotItem it) return;
 
         int idx = it.Index;
@@ -371,11 +402,14 @@ public partial class MainWindow
         bool positioned = Viewer.IsAmbientIdPositionedInDoc(idx);
         bool pending = loaded && !positioned;
 
-        // Place only when pending and not already placing
-        PlaceAmbientButton.IsEnabled = !placing && pending;
+        // Place only when pending and not already in a mode
+        PlaceAmbientButton.IsEnabled = !placing && !moving && pending;
 
-        // Hide/Show only when loaded + positioned and not placing
-        bool canToggle = !placing && loaded && positioned;
+        // Move only when loaded + positioned and not already in a mode
+        MoveAmbientButton.IsEnabled = !placing && !moving && loaded && positioned;
+
+        // Hide/Show only when loaded + positioned and not in a mode
+        bool canToggle = !placing && !moving && loaded && positioned;
         ToggleAmbientButton.IsEnabled = canToggle;
 
         if (loaded && positioned)
@@ -383,6 +417,7 @@ public partial class MainWindow
         else
             ToggleAmbientButton.Content = "Hide";
     }
+
 
     private void AmbientList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -464,5 +499,40 @@ public partial class MainWindow
     {
         ExitAmbientPlacementMode();
     }
+
+
+private void MoveAmbient_Click(object sender, RoutedEventArgs e)
+{
+    if (!_uiReady || Viewer == null) return;
+
+    if (AmbientList.SelectedItem is not AmbientSlotItem it)
+    {
+        MessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
+        return;
+    }
+
+    int idx = it.Index;
+
+    var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
+    bool loaded = (idx >= 0 && idx <= 22 && slots[idx] != null);
+    bool positioned = Viewer.IsAmbientIdPositionedInDoc(idx);
+
+    if (!loaded || !positioned)
+    {
+        MessageBox.Show("Move est disponible uniquement si l image est loaded + positioned.");
+        return;
+    }
+
+    // Exit placement if needed
+    if (_placingAmbientIndex != null)
+        ExitAmbientPlacementMode();
+
+    EnterAmbientMoveMode(idx);
+}
+
+private void CancelMoveAmbient_Click(object sender, RoutedEventArgs e)
+{
+    ExitAmbientMoveMode();
+}
 
 }

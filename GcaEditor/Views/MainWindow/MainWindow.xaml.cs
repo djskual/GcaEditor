@@ -97,5 +97,25 @@ public partial class MainWindow : Window
         Viewer.SetZoneNames(_zoneCatalog.Names);
 
         Viewer.AmbientPlaceRequested += Viewer_AmbientPlaceRequested;
+
+        Viewer.AmbientMoveCommitted += (_, e) =>
+        {
+            if (_doc == null) return;
+
+            // Snapshot before mutating doc
+            _history.PushUndoSnapshot(CaptureState());
+
+            var img = _doc.Images.FirstOrDefault(x => x.Id == (ushort)e.Id);
+            if (img == null) return;
+
+            img.X = e.NewX;
+            img.Y = e.NewY;
+
+            Viewer.LoadDocument(_doc);
+            ApplyAmbientSideToViewer();
+            RefreshAmbientUi();
+
+            ExitAmbientMoveMode();
+        };
     }
 }

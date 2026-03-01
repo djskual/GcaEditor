@@ -44,6 +44,12 @@ public sealed class AmbientImageOverlay
 
     public bool HasSlot(int index) => index >= 0 && index < _slots.Length && _slots[index] != null;
 
+    public BitmapSource? GetSlotBitmap(int index)
+        => (index >= 0 && index < _slots.Length) ? _slots[index] : null;
+
+    public bool TryGetDisplayedImage(int index, out Image image)
+        => _images.TryGetValue(index, out image!);
+
     /// <summary>
     /// Provide a bitmap already converted to display format.
     /// </summary>

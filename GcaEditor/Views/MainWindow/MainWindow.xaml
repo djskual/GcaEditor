@@ -110,7 +110,7 @@
                 </GroupBox>
 
                 <!-- AMBIENT IMAGES -->
-                <GroupBox Header="Ambient images" Padding="8" Height="320">
+                <GroupBox Header="Ambient images" Padding="8" Height="360">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -137,6 +137,13 @@
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
 
+                        <TextBlock x:Name="AmbientMoveHint"
+                                   Grid.Row="4"
+                                   Margin="0,2,0,0"
+                                   Foreground="Gray"
+                                   Text="Move mode: drag the selected image. ESC to cancel."
+                                   Visibility="Collapsed"/>
+
                         <TextBlock x:Name="AmbientPlacementHint"
                                    Grid.Row="4"
                                    Margin="0,2,0,0"
@@ -145,8 +152,8 @@
                                    TextWrapping="Wrap"
                                    Visibility="Collapsed"/>
 
-                        <!-- Buttons: 2 lines -->
-                        <StackPanel Grid.Row="6" Orientation="Vertical">
+                        <!-- Buttons: 3 lines -->
+                        <StackPanel Grid.Row="8" Orientation="Vertical">
 
                             <!-- Line 1: import file / import folder / delete -->
                             <StackPanel Orientation="Horizontal">
@@ -192,6 +199,22 @@
                                         IsEnabled="False"/>
                             </StackPanel>
 
+                            <!-- Line 3: Move Ambient / cancel -->
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button x:Name="MoveAmbientButton"
+                                    Content="Move"
+                                    Click="MoveAmbient_Click"
+                                    Padding="10,4"
+                                    MinWidth="137"
+                                    Margin="0,0,8,0"/>
+
+                                <Button x:Name="CancelMoveAmbientButton"
+                                    Content="Cancel move"
+                                    IsEnabled="False"
+                                    Click="CancelMoveAmbient_Click"
+                                    Padding="10,4"
+                                    MinWidth="137"/>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </GroupBox>

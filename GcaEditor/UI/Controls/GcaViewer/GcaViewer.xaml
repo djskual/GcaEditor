@@ -33,6 +33,11 @@
                     <Canvas x:Name="AmbientLayer" Background="Transparent"/>
                     <Canvas x:Name="SunLayer" Background="Transparent"/>
 
+                    <!-- Move capture layer (on top). Visible only in move mode. -->
+                    <Border x:Name="MoveHitLayer"
+                            Background="Transparent"
+                            Visibility="Collapsed"/>
+
                     <!-- Placement capture layer (on top). Visible only in placement mode. -->
                     <Border x:Name="PlacementHitLayer"
                             Background="Transparent"

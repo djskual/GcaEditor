@@ -32,6 +32,11 @@ public partial class GcaViewer : UserControl
 
         PlacementHitLayer.MouseLeftButtonDown += PlacementHitLayer_MouseLeftButtonDown;
 
+        MoveHitLayer.MouseLeftButtonDown += MoveHitLayer_MouseLeftButtonDown;
+        MoveHitLayer.MouseMove += MoveHitLayer_MouseMove;
+        MoveHitLayer.MouseLeftButtonUp += MoveHitLayer_MouseLeftButtonUp;
+        MoveHitLayer.LostMouseCapture += MoveHitLayer_LostMouseCapture;
+
         _ctx = new ViewerContext(
             EditorScroll,
             BackgroundImage,
@@ -52,6 +57,13 @@ public partial class GcaViewer : UserControl
         _ambient = new AmbientImageOverlay(_ctx);
 
         Loaded += (_, __) => AttachHwndHook();
+
+        //LostMouseCapture += (_, __) => AmbientDrag_OnLostMouseCapture();
+        //PreviewKeyDown += (_, e) =>
+        //{
+        //    if (e.Key == Key.Escape)
+        //        AmbientDrag_Cancel();
+        //};
     }
 
     public void SetZoneNames(System.Collections.Generic.IReadOnlyDictionary<ushort, string> names)
