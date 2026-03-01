@@ -168,6 +168,26 @@ public sealed class SunOverlayManager
         return $"Zone {zoneId}";
     }
 
+    private System.Windows.Point ClampZoneCenter(System.Windows.Point center, double halfZone)
+    {
+        if (_ctx.Background == null)
+            return center;
+
+        double bgW = _ctx.Background.PixelWidth;
+        double bgH = _ctx.Background.PixelHeight;
+
+        double cx = center.X;
+        double cy = center.Y;
+
+        if (cx < halfZone) cx = halfZone;
+        if (cy < halfZone) cy = halfZone;
+
+        if (cx > bgW - halfZone) cx = bgW - halfZone;
+        if (cy > bgH - halfZone) cy = bgH - halfZone;
+
+        return new System.Windows.Point(cx, cy);
+    }
+
     private void AttachDrag(Image sun, GcaZone zone, double sunSize, double halfZone)
     {
         bool dragging = false;
@@ -213,11 +233,21 @@ public sealed class SunOverlayManager
             double newLeft = startLeft + dx;
             double newTop = startTop + dy;
 
-            Canvas.SetLeft(sun, newLeft);
-            Canvas.SetTop(sun, newTop);
-
+            // compute proposed center of zone
             double cx = newLeft + sunSize / 2.0;
             double cy = newTop + sunSize / 2.0;
+
+            // clamp center so the 104x104 zone stays inside background
+            var clamped = ClampZoneCenter(new System.Windows.Point(cx, cy), halfZone);
+            cx = clamped.X;
+            cy = clamped.Y;
+
+            // recompute icon top-left from clamped center
+            newLeft = cx - sunSize / 2.0;
+            newTop = cy - sunSize / 2.0;
+
+            Canvas.SetLeft(sun, newLeft);
+            Canvas.SetTop(sun, newTop);
 
             zone.X1 = (ushort)Math.Round(cx - halfZone);
             zone.Y1 = (ushort)Math.Round(cy - halfZone);
