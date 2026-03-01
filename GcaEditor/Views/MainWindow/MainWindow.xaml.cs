@@ -109,8 +109,10 @@ public partial class MainWindow : Window
             var img = _doc.Images.FirstOrDefault(x => x.Id == (ushort)e.Id);
             if (img == null) return;
 
-            img.X = e.NewX;
-            img.Y = e.NewY;
+            var clamped = Viewer.ClampAmbientTopLeft(e.Id, e.NewX, e.NewY);
+
+            img.X = (ushort)Math.Round(clamped.X);
+            img.Y = (ushort)Math.Round(clamped.Y);
 
             Viewer.LoadDocument(_doc);
             ApplyAmbientSideToViewer();

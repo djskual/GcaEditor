@@ -93,6 +93,10 @@ public partial class GcaViewer
         double newX = _ambientMoveStartX + dx;
         double newY = _ambientMoveStartY + dy;
 
+        var clamped = ClampAmbientTopLeft(idx, newX, newY);
+        newX = clamped.X;
+        newY = clamped.Y;
+
         if (_ambient.TryGetDisplayedImage(idx, out var imgEl))
         {
             Canvas.SetLeft(imgEl, newX);
@@ -135,8 +139,15 @@ public partial class GcaViewer
         double dx = nowImg.X - _ambientMoveStartMouseImg.X;
         double dy = nowImg.Y - _ambientMoveStartMouseImg.Y;
 
-        ushort newX = (ushort)Math.Round(_ambientMoveStartX + dx);
-        ushort newY = (ushort)Math.Round(_ambientMoveStartY + dy);
+        double fx = _ambientMoveStartX + dx;
+        double fy = _ambientMoveStartY + dy;
+
+        var clamped = ClampAmbientTopLeft(idx, fx, fy);
+        fx = clamped.X;
+        fy = clamped.Y;
+
+        ushort newX = (ushort)Math.Round(fx);
+        ushort newY = (ushort)Math.Round(fy);
 
         // Re-render from doc will happen after commit. Emit event.
         AmbientMoveCommitted?.Invoke(this,

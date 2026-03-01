@@ -300,6 +300,8 @@ public partial class MainWindow
         // Undo snapshot BEFORE mutation
         _history.PushUndoSnapshot(CaptureState());
 
+        var clampedPt = Viewer.ClampAmbientTopLeft(idxSlot, imagePt.X, imagePt.Y);
+
         // Create or update image entry in doc
         var existing = _doc.Images.FirstOrDefault(i => i.Id == (ushort)idxSlot);
         if (existing == null)
@@ -307,14 +309,14 @@ public partial class MainWindow
             _doc.Images.Add(new GcaImageRef
             {
                 Id = (ushort)idxSlot,
-                X = (ushort)Math.Round(imagePt.X),
-                Y = (ushort)Math.Round(imagePt.Y),
+                X = (ushort)Math.Round(clampedPt.X),
+                Y = (ushort)Math.Round(clampedPt.Y),
             });
         }
         else
         {
-            existing.X = (ushort)Math.Round(imagePt.X);
-            existing.Y = (ushort)Math.Round(imagePt.Y);
+            existing.X = (ushort)Math.Round(clampedPt.X);
+            existing.Y = (ushort)Math.Round(clampedPt.Y);
         }
 
         // Ensure it's visible after placement

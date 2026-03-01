@@ -85,4 +85,32 @@ public partial class GcaViewer
         var positions = _doc.Images.Select(i => ((int)i.Id, (int)i.X, (int)i.Y));
         _ambient.RenderAtPositions(positions);
     }
+
+    public Point ClampAmbientTopLeft(int index, double x, double y)
+    {
+        if (_ctx.Background == null) return new Point(x, y);
+
+        var bmp = _ambient.GetSlotBitmap(index);
+        if (bmp == null) return new Point(x, y);
+
+        double bgW = _ctx.Background.PixelWidth;
+        double bgH = _ctx.Background.PixelHeight;
+
+        double maxX = bgW - bmp.PixelWidth;
+        double maxY = bgH - bmp.PixelHeight;
+
+        if (maxX < 0) maxX = 0;
+        if (maxY < 0) maxY = 0;
+
+        double cx = x;
+        double cy = y;
+
+        if (cx < 0) cx = 0;
+        if (cy < 0) cy = 0;
+        if (cx > maxX) cx = maxX;
+        if (cy > maxY) cy = maxY;
+
+        return new Point(cx, cy);
+    }
+
 }
