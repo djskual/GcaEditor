@@ -14,7 +14,7 @@ public partial class MainWindow
         var ofd = new OpenFileDialog
         {
             Filter = "PNG (*.png)|*.png",
-            Title = "Fond menu lumieres (1280x556)"
+            Title = "Fond menu lumieres (MIB2.5 1280x556 or MIB2 800x417)"
         };
         if (ofd.ShowDialog() != true) return;
 
@@ -26,6 +26,7 @@ public partial class MainWindow
         bi.Freeze();
 
         Viewer.SetBackground(bi);
+        UpdateMibLabelFromBackground(bi);
         Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
 
         // Now we can open a GCA
@@ -44,7 +45,7 @@ public partial class MainWindow
     {
         if (!Viewer.HasBackground)
         {
-            MessageBox.Show("Tu dois d'abord importer un background (PNG 1280x556) avant de charger un .gca.");
+            MessageBox.Show("Tu dois d'abord importer un background (PNG 1280x556 or 800x417) avant de charger un .gca.");
             return;
         }
 
@@ -92,6 +93,19 @@ public partial class MainWindow
 
         GcaCodec.Save(sfd.FileName, _doc);
         MessageBox.Show("GCA sauvegarde.");
+    }
+
+    private void UpdateMibLabelFromBackground(BitmapSource bg)
+    {
+        string mib;
+        if (bg.PixelWidth == 1280 && bg.PixelHeight == 556)
+            mib = "MIB2.5 (1280x556)";
+        else if (bg.PixelWidth == 800 && bg.PixelHeight == 417)
+            mib = "MIB2 (800x417)";
+        else
+            mib = "Unknown (" + bg.PixelWidth + "x" + bg.PixelHeight + ")";
+
+        MibLabel.Text = "MIB: " + mib;
     }
 
     private void CaptureInitialAmbientIds()

@@ -32,7 +32,7 @@
 
             <StackPanel Grid.Row="0">
                 <Button x:Name="ImportBackgroundButton"
-                        Content="Import Background (PNG 1280x556)"
+                        Content="Import Background (PNG 1280x556 or 800x417)"
                         Click="ImportBackground_Click"
                         Margin="0,0,0,6"/>
 
@@ -47,6 +47,12 @@
                         Click="SaveGca_Click"
                         Margin="0,0,0,12"
                         IsEnabled="False"/>
+            
+
+                <TextBlock x:Name="MibLabel"
+                           Text="MIB: -"
+                           Foreground="Gray"
+                           Margin="0,0,0,12"/>
             </StackPanel>
 
             <StackPanel Grid.Row="2">
