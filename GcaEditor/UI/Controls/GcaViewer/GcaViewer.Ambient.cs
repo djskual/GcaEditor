@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using System.Windows.Controls;
 using GcaEditor.Models;
 
 namespace GcaEditor.UI.Controls;
@@ -111,6 +112,18 @@ public partial class GcaViewer
         if (cy > maxY) cy = maxY;
 
         return new Point(cx, cy);
+    }
+
+    public bool TrySetAmbientDisplayedPosition(int index, double x, double y)
+    {
+        if (_ambient.TryGetDisplayedImage(index, out var imgEl))
+        {
+            Canvas.SetLeft(imgEl, x);
+            Canvas.SetTop(imgEl, y);
+            return true;
+        }
+
+        return false;
     }
 
 }

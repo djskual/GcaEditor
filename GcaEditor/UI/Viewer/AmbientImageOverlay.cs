@@ -50,6 +50,18 @@ public sealed class AmbientImageOverlay
     public bool TryGetDisplayedImage(int index, out Image image)
         => _images.TryGetValue(index, out image!);
 
+    public void SetDisplayedOpacity(int index, double opacity)
+    {
+        if (_images.TryGetValue(index, out var img))
+            img.Opacity = opacity;
+    }
+
+    public void SetAllDisplayedOpacity(double opacity)
+    {
+        foreach (var img in _images.Values)
+            img.Opacity = opacity;
+    }
+
     /// <summary>
     /// Provide a bitmap already converted to display format.
     /// </summary>

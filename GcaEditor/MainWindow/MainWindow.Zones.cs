@@ -75,6 +75,7 @@ public partial class MainWindow
         if (ZonesList.SelectedItem is not ZoneListItem it)
         {
             Viewer.ClearSelection();
+            UpdateZoneOpacitySelection(null);
             return;
         }
 

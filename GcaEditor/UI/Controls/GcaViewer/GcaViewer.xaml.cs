@@ -94,4 +94,13 @@ public partial class GcaViewer : UserControl
         _suns.SetDocument(doc);
         RenderAmbientFromDoc();
     }
+
+    public void SetAmbientDisplayedOpacity(int index, double opacity)
+        => _ambient.SetDisplayedOpacity(index, opacity);
+
+    public void SetAllAmbientDisplayedOpacity(double opacity)
+        => _ambient.SetAllDisplayedOpacity(opacity);
+
+    public BitmapSource? GetAmbientSlotBitmap(int index)
+        => _ambient.GetSlotBitmap(index);
 }

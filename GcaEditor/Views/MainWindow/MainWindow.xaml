@@ -17,13 +17,18 @@
     </Window.InputBindings>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="330"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- LEFT -->
-        <Grid Grid.Column="0" Margin="10">
+        <Grid Grid.Row="0" Grid.Column="0" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="12"/>
@@ -53,15 +58,7 @@
                         Click="OpenGca_Click"
                         Margin="0,0,0,6"
                         IsEnabled="False"/>
-
-                <Button x:Name="SaveGcaButton"
-                        Content="Save .gca"
-                        Click="SaveGca_Click"
-                        Margin="0,0,0,12"
-                        IsEnabled="False"/>
-            
-
-                <TextBlock x:Name="MibLabel"
+<TextBlock x:Name="MibLabel"
                            Text="MIB: -"
                            Foreground="Gray"
                            Margin="0,0,0,12"/>
@@ -242,12 +239,55 @@
         </Grid>
 
         <!-- RIGHT -->
-        <Grid x:Name="ViewerHost" Grid.Column="1" Margin="12" SizeChanged="ViewerHost_SizeChanged">
+        <Grid x:Name="ViewerHost" Grid.Row="0" Grid.Column="1" Margin="12" SizeChanged="ViewerHost_SizeChanged">
             <controls:GcaViewer x:Name="Viewer"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Width="980"
                                 Height="480"/>
+            
+            <!-- Zone opacity overlay -->
+            <Border x:Name="ZoneOpacityPanel"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                Margin="14,0,0,14"
+                Background="#CC000000"
+                CornerRadius="8"
+                Padding="10"
+                Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="ZoneOpacityLabel"
+                       Text="Zone: -"
+                       Foreground="White"
+                       Margin="0,0,0,6"/>
+
+                    <Canvas x:Name="ZoneOpacityCanvas" Width="360" Height="56">
+                        <Image x:Name="ZoneOpacityBar"
+                       Width="360"
+                       Height="20"
+                       Canvas.Left="0"
+                       Canvas.Top="28"
+                       Stretch="Fill"/>
+
+                        <Image x:Name="ZoneOpacityCursor"
+                       Width="18"
+                       Height="36"
+                       Canvas.Left="0"
+                       Canvas.Top="16"
+                       Stretch="Fill"/>
+                    </Canvas>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Bottom bar -->
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
+            <Button x:Name="SaveGcaButton"
+                    Content="Save .gca"
+                    Click="SaveGca_Click"
+                    Padding="14,6"
+                    HorizontalAlignment="Left"
+                    IsEnabled="False"/>
         </Grid>
     </Grid>
 </Window>

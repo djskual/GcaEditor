@@ -1,4 +1,5 @@
 using GcaEditor.Models;
+using System;
 using System.Windows.Input;
 
 namespace GcaEditor;
@@ -10,6 +11,7 @@ public partial class MainWindow
     private ushort _ambientNudgeStartX;
     private ushort _ambientNudgeStartY;
     private bool _ambientNudgeUndoPushed;
+    private bool _ambientNudgeNeedsRefresh;
 
     private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
     {
@@ -25,16 +27,24 @@ public partial class MainWindow
         // Arrow keys nudge selected ambient image (when not in Place/Move)
         if (e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Up || e.Key == Key.Down)
         {
-            if (_placingAmbientIndex != null || _movingAmbientIndex != null)
+            if (_placingAmbientIndex != null)
                 return;
 
             if (!_uiReady || Viewer == null || _doc == null)
                 return;
 
-            if (AmbientList.SelectedItem is not AmbientSlotItem it)
-                return;
-
-            int idx = it.Index;
+            int idx;
+            if (_movingAmbientIndex != null)
+            {
+                // Always nudge the moving slot even if list selection changes.
+                idx = _movingAmbientIndex.Value;
+            }
+            else
+            {
+                if (AmbientList.SelectedItem is not AmbientSlotItem it)
+                    return;
+                idx = it.Index;
+            }
 
             var img = _doc.Images.FirstOrDefault(x => x.Id == (ushort)idx);
             if (img == null)
@@ -61,11 +71,7 @@ public partial class MainWindow
             }
 
             // Push undo snapshot once per sequence, on first effective move
-            if (!_ambientNudgeUndoPushed)
-            {
-                _history.PushUndoSnapshot(CaptureState());
-                _ambientNudgeUndoPushed = true;
-            }
+            // Note: we push undo only when we actually change position (after clamp)
 
             int step = (Keyboard.Modifiers & ModifierKeys.Shift) != 0 ? 10 : 1;
 
@@ -85,12 +91,30 @@ public partial class MainWindow
 
             var clamped = Viewer.ClampAmbientTopLeft(idx, newX, newY);
 
-            img.X = (ushort)clamped.X;
-            img.Y = (ushort)clamped.Y;
+            ushort nextX = (ushort)Math.Round(clamped.X);
+            ushort nextY = (ushort)Math.Round(clamped.Y);
 
-            Viewer.LoadDocument(_doc);
-            ApplyAmbientSideToViewer();
-            RefreshAmbientUi();
+            // If clamp results in no movement, do nothing (and don't push undo)
+            if (nextX == img.X && nextY == img.Y)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Push undo snapshot once per sequence, on first effective move
+            if (!_ambientNudgeUndoPushed)
+            {
+                _history.PushUndoSnapshot(CaptureState());
+                _ambientNudgeUndoPushed = true;
+            }
+
+            img.X = nextX;
+            img.Y = nextY;
+
+            // Update only the displayed element for smooth nudging.
+            // Full re-render will happen on KeyUp.
+            Viewer.TrySetAmbientDisplayedPosition(idx, img.X, img.Y);
+            _ambientNudgeNeedsRefresh = true;
 
             e.Handled = true;
         }
@@ -101,7 +125,19 @@ public partial class MainWindow
         if (e.Key != Key.Left && e.Key != Key.Right && e.Key != Key.Up && e.Key != Key.Down)
             return;
 
-        // End nudge sequence
+        // End nudge sequence: refresh viewer once (avoid rebuilding every pixel)
+        if (_ambientNudgeNeedsRefresh && _uiReady && Viewer != null && _doc != null)
+        {
+            Viewer.LoadDocument(_doc);
+            ApplyAmbientSideToViewer();
+            RefreshAmbientUi();
+
+            // Re-apply zone opacity after re-render (if a zone is selected)
+            if (_zoneOpacitySelectedZoneId != null)
+                ApplyZoneOpacityToLinkedSlots();
+        }
+
+        _ambientNudgeNeedsRefresh = false;
         _ambientNudgeActive = false;
         _ambientNudgeUndoPushed = false;
     }

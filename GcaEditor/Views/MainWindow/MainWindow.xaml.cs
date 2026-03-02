@@ -47,6 +47,8 @@ public partial class MainWindow : Window
 
             InitAmbientUiOnLoaded();
             UpdateAmbientAvailability();
+
+            InitZoneOpacityUi();
         };
     }
 
@@ -114,6 +116,8 @@ public partial class MainWindow : Window
             {
                 _suppressListSelection = false;
             }
+
+            UpdateZoneOpacitySelection(zoneId);
         };
 
         Viewer.SetZoneNames(_zoneCatalog.Names);
