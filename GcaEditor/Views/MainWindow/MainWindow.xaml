@@ -31,6 +31,18 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0">
+
+                <Button x:Name="ChooseCarButton"
+                        Content="Choose car"
+                        Click="ChooseCar_Click"
+                        Margin="0,0,0,6"/>
+
+                <TextBlock x:Name="CurrentCarLabel"
+                           Text="Car: -"
+                           Foreground="Gray"
+                           Margin="0,0,0,10"/>
+
+                <StackPanel x:Name="MainControlsPanel">
                 <Button x:Name="ImportBackgroundButton"
                         Content="Import Background (PNG 1280x556 or 800x417)"
                         Click="ImportBackground_Click"
@@ -53,9 +65,10 @@
                            Text="MIB: -"
                            Foreground="Gray"
                            Margin="0,0,0,12"/>
+                </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Row="2">
+            <StackPanel x:Name="MainLeftPanels" Grid.Row="2">
 
                 <!-- ZONES -->
                 <GroupBox Header="Zones" Padding="8" Height="195" Margin="0,0,0,10">

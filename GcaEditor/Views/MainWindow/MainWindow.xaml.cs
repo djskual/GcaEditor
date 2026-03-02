@@ -36,9 +36,8 @@ public partial class MainWindow : Window
         WireViewerEvents();
         WireWindowEvents();
 
-        // Must load a background before opening / saving a GCA
-        OpenGcaButton.IsEnabled = Viewer.HasBackground;
-        SaveGcaButton.IsEnabled = false;
+        // Startup: lock the UI until Choose car (or Custom) is selected
+        SetStartupLocked(true);
 
         RefreshZonesUi();
 
@@ -49,6 +48,27 @@ public partial class MainWindow : Window
             InitAmbientUiOnLoaded();
             UpdateAmbientAvailability();
         };
+    }
+
+    private void SetStartupLocked(bool locked)
+    {
+        // Choose car is always available
+        if (ChooseCarButton != null)
+            ChooseCarButton.IsEnabled = true;
+
+        // Disable everything else until a profile or Custom is selected
+        if (MainControlsPanel != null)
+            MainControlsPanel.IsEnabled = !locked;
+
+        if (MainLeftPanels != null)
+            MainLeftPanels.IsEnabled = !locked;
+
+        if (locked)
+        {
+            // Keep these coherent even if panels are enabled later
+            if (OpenGcaButton != null) OpenGcaButton.IsEnabled = false;
+            if (SaveGcaButton != null) SaveGcaButton.IsEnabled = false;
+        }
     }
 
     private void WireWindowEvents()

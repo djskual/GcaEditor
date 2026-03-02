@@ -18,7 +18,14 @@
     {
       "id": "0200000000",
       "name": "VW Golf 7 Generic",
-      "available_mibs": [ "MIB25", "MIB2" ],
+      "available_mibs": [ "MIB25" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0200000000",
+      "name": "VW Passat Generic",
+      "available_mibs": [ "MIB2" ],
       "gcas": [ 0, 1 ],
       "default_gca": 0
     },
