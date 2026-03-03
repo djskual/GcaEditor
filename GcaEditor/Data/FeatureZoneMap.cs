@@ -42,4 +42,9 @@ public static class FeatureZoneMap
     {
         return _featureToZone.TryGetValue(featureId, out zoneId);
     }
+
+    public static bool FeatureBelongsToZone(int featureId, int zoneId)
+    {
+        return TryGetZoneForFeature(featureId, out var z) && z == zoneId;
+    }
 }

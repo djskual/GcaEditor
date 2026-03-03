@@ -124,6 +124,16 @@ public partial class MainWindow : Window
 
         Viewer.AmbientPlaceRequested += Viewer_AmbientPlaceRequested;
 
+        Viewer.OpacityBarValueChanged += (_, v) =>
+        {
+            OnZoneOpacityValueChanged(v);
+        };
+
+        Viewer.OpacityAllZonesChanged += (_, enabled) =>
+        {
+            SetZoneOpacityAllZones(enabled);
+        };
+
         Viewer.AmbientMoveCommitted += (_, e) =>
         {
             if (_doc == null) return;

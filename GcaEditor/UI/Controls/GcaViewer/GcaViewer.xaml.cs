@@ -58,6 +58,8 @@ public partial class GcaViewer : UserControl
 
         Loaded += (_, __) => AttachHwndHook();
 
+        InitOpacityBar();
+
         //LostMouseCapture += (_, __) => AmbientDrag_OnLostMouseCapture();
         //PreviewKeyDown += (_, e) =>
         //{

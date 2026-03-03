@@ -11,6 +11,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <ScrollViewer x:Name="EditorScroll"
@@ -33,12 +34,10 @@
                     <Canvas x:Name="AmbientLayer" Background="Transparent"/>
                     <Canvas x:Name="SunLayer" Background="Transparent"/>
 
-                    <!-- Move capture layer (on top). Visible only in move mode. -->
                     <Border x:Name="MoveHitLayer"
                             Background="Transparent"
                             Visibility="Collapsed"/>
 
-                    <!-- Placement capture layer (on top). Visible only in placement mode. -->
                     <Border x:Name="PlacementHitLayer"
                             Background="Transparent"
                             Visibility="Collapsed"/>
@@ -79,6 +78,74 @@
                         <Button Content="-"   Width="32" Height="24" Margin="0,0,6,0" Click="ZoomOut_Click"/>
                         <Button Content="+"   Width="32" Height="24" Click="ZoomIn_Click"/>
                     </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Opacity bar -->
+            <Border x:Name="OpacityBar"
+                    Grid.Row="2"
+                    Margin="0,6,0,0"
+                    Background="#141414"
+                    CornerRadius="8"
+                    Padding="10,6"
+                    SnapsToDevicePixels="True">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Bright icon, tinted white -->
+                    <Border x:Name="OpacityIcon"
+                            Grid.Column="0"
+                            Width="18"
+                            Height="18"
+                            Background="White"
+                            CornerRadius="2"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center">
+                        <Border.OpacityMask>
+                            <ImageBrush ImageSource="/Assets/bright.png" Stretch="Uniform"/>
+                        </Border.OpacityMask>
+                    </Border>
+
+                    <!-- All Zones toggle -->
+                    <ToggleButton x:Name="AllZonesButton"
+                                  Grid.Column="1"
+                                  Content="All Zones"
+                                  MinWidth="90"
+                                  Height="22"
+                                  Margin="0,0,10,0"
+                                  VerticalAlignment="Center"
+                                  Padding="10,0"/>
+
+                    <!-- Track + Thumb (Canvas) -->
+                    <Border x:Name="OpacityTrackBorder"
+                            Grid.Column="2"
+                            Height="18"
+                            CornerRadius="5"
+                            Background="#0B0B0B"
+                            BorderBrush="#2A2A2A"
+                            BorderThickness="1"
+                            VerticalAlignment="Center"
+                            SnapsToDevicePixels="True"
+                            ClipToBounds="True">
+                        <Canvas x:Name="OpacityTrackCanvas"
+                                Height="18"
+                                Background="#00000000">
+                            <Border x:Name="OpacityThumb"
+                                    Width="32"
+                                    Height="18"
+                                    CornerRadius="5"
+                                    Background="#B0B0B0"
+                                    BorderBrush="#2A2A2A"
+                                    BorderThickness="1"
+                                    Canvas.Left="0"
+                                    Canvas.Top="0"/>
+                        </Canvas>
+                    </Border>
+
                 </Grid>
             </Border>
         </Grid>

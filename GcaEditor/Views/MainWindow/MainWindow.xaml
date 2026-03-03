@@ -240,44 +240,16 @@
 
         <!-- RIGHT -->
         <Grid x:Name="ViewerHost" Grid.Row="0" Grid.Column="1" Margin="12" SizeChanged="ViewerHost_SizeChanged">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
             <controls:GcaViewer x:Name="Viewer"
+                                Grid.Row="0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Width="980"
-                                Height="480"/>
-            
-            <!-- Zone opacity overlay -->
-            <Border x:Name="ZoneOpacityPanel"
-                VerticalAlignment="Bottom"
-                HorizontalAlignment="Left"
-                Margin="14,0,0,14"
-                Background="#CC000000"
-                CornerRadius="8"
-                Padding="10"
-                Visibility="Collapsed">
-                <StackPanel>
-                    <TextBlock x:Name="ZoneOpacityLabel"
-                       Text="Zone: -"
-                       Foreground="White"
-                       Margin="0,0,0,6"/>
-
-                    <Canvas x:Name="ZoneOpacityCanvas" Width="360" Height="56">
-                        <Image x:Name="ZoneOpacityBar"
-                       Width="360"
-                       Height="20"
-                       Canvas.Left="0"
-                       Canvas.Top="28"
-                       Stretch="Fill"/>
-
-                        <Image x:Name="ZoneOpacityCursor"
-                       Width="18"
-                       Height="36"
-                       Canvas.Left="0"
-                       Canvas.Top="16"
-                       Stretch="Fill"/>
-                    </Canvas>
-                </StackPanel>
-            </Border>
+                                Height="402"/>
         </Grid>
 
         <!-- Bottom bar -->

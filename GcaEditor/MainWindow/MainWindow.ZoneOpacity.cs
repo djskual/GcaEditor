@@ -1,167 +1,162 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using GcaEditor.Data;
+using GcaEditor.Models;
+using System.Collections.Generic;
 
 namespace GcaEditor;
 
 public partial class MainWindow
 {
-    private bool _zoneOpacityDragging;
-    private double _zoneOpacityValue = 1.0;
     private ushort? _zoneOpacitySelectedZoneId;
-    private readonly List<int> _zoneOpacityLinkedSlots = new();
+
+    // Per-zone memory. Missing entry means 1.0.
+    private readonly Dictionary<ushort, double> _zoneOpacityByZone = new();
+
+    // Current bar value (0..1). In zone mode, this matches selected zone.
+    private double _zoneOpacityValue01 = 1.0;
+
+    // When enabled, the bar controls all zones.
+    private bool _zoneOpacityAllZones;
 
     private void InitZoneOpacityUi()
     {
-        // Load UI images (bar.png and cursor.png) from embedded Resources
-        try
-        {
-            ZoneOpacityBar.Source = LoadPackBitmap("pack://application:,,,/Assets/bar.png");
-            ZoneOpacityCursor.Source = LoadPackBitmap("pack://application:,,,/Assets/cursor.png");
-        }
-        catch
-        {
-            ZoneOpacityPanel.Visibility = Visibility.Collapsed;
-        }
+        if (Viewer == null) return;
 
-        ZoneOpacityCanvas.MouseLeftButtonDown += ZoneOpacityCanvas_MouseLeftButtonDown;
-        ZoneOpacityCanvas.MouseMove += ZoneOpacityCanvas_MouseMove;
-        ZoneOpacityCanvas.MouseLeftButtonUp += ZoneOpacityCanvas_MouseLeftButtonUp;
-        ZoneOpacityCanvas.LostMouseCapture += ZoneOpacityCanvas_LostMouseCapture;
-
-        ApplyZoneOpacityValueToCursor();
+        Viewer.SetOpacityBarEnabled(false);
+        Viewer.SetOpacityBarValue(_zoneOpacityValue01);
     }
 
-    private static BitmapSource LoadPackBitmap(string uri)
+    private static double Clamp01(double v)
     {
-        var bi = new BitmapImage();
-        bi.BeginInit();
-        bi.CacheOption = BitmapCacheOption.OnLoad;
-        bi.UriSource = new Uri(uri, UriKind.Absolute);
-        bi.EndInit();
-        bi.Freeze();
-        return bi;
+        if (v < 0) return 0;
+        if (v > 1) return 1;
+        return v;
+    }
+
+    // Called from Viewer.OpacityBarValueChanged
+    private void OnZoneOpacityValueChanged(double v)
+    {
+        _zoneOpacityValue01 = Clamp01(v);
+
+        if (_zoneOpacityAllZones)
+        {
+            if (_doc != null)
+            {
+                foreach (var z in _doc.Zones)
+                    _zoneOpacityByZone[z.Id] = _zoneOpacityValue01;
+            }
+
+            ApplyZoneOpacityToLinkedSlots();
+            return;
+        }
+
+        if (_zoneOpacitySelectedZoneId != null)
+            _zoneOpacityByZone[_zoneOpacitySelectedZoneId.Value] = _zoneOpacityValue01;
+
+        ApplyZoneOpacityToLinkedSlots();
+    }
+
+    private void SetZoneOpacityAllZones(bool enabled)
+    {
+        if (!_uiReady || Viewer == null)
+        {
+            _zoneOpacityAllZones = enabled;
+            return;
+        }
+
+        if (enabled)
+        {
+            // Rule: only AllZones toggle resets everything to 100%.
+            _zoneOpacityAllZones = true;
+            _zoneOpacityByZone.Clear();
+            _zoneOpacityValue01 = 1.0;
+
+            Viewer.SetOpacityBarEnabled(true);
+            Viewer.SetOpacityBarValue(1.0);
+            ApplyZoneOpacityToLinkedSlots();
+            return;
+        }
+
+        // Leaving AllZones: keep memory as-is.
+        _zoneOpacityAllZones = false;
+        UpdateZoneOpacitySelection(_zoneOpacitySelectedZoneId);
+        ApplyZoneOpacityToLinkedSlots();
     }
 
     private void UpdateZoneOpacitySelection(ushort? zoneId)
     {
         _zoneOpacitySelectedZoneId = zoneId;
 
-        if (zoneId == null || _doc == null)
+        if (!_uiReady || Viewer == null) return;
+
+        // Enable if a zone is selected OR AllZones is enabled.
+        Viewer.SetOpacityBarEnabled(_zoneOpacityAllZones || zoneId != null);
+
+        if (_zoneOpacityAllZones)
         {
-            ZoneOpacityPanel.Visibility = Visibility.Collapsed;
-            _zoneOpacityLinkedSlots.Clear();
-
-            if (Viewer != null)
-                Viewer.SetAllAmbientDisplayedOpacity(1.0);
-
+            Viewer.SetOpacityBarValue(_zoneOpacityValue01);
+            ApplyZoneOpacityToLinkedSlots();
             return;
         }
 
-        string zoneName;
-        if (_zoneCatalog.Names.TryGetValue(zoneId.Value, out var n) && !string.IsNullOrWhiteSpace(n))
-            zoneName = n;
-        else
-            zoneName = "Zone " + zoneId.Value;
-
-        ZoneOpacityLabel.Text = zoneName;
-        ZoneOpacityPanel.Visibility = Visibility.Visible;
-
-        RebuildZoneOpacityLinkedSlots(zoneId.Value);
-        ApplyZoneOpacityToLinkedSlots();
-    }
-
-    private void RebuildZoneOpacityLinkedSlots(ushort zoneId)
-    {
-        _zoneOpacityLinkedSlots.Clear();
-        if (_doc == null) return;
-
-        // Features are linked to zones by mapping.
-        foreach (var img in _doc.Images)
+        if (zoneId == null)
         {
-            int idx = img.Id;
-
-            if (FeatureZoneMap.TryGetZoneForFeature(idx, out var z) && z == zoneId)
-                _zoneOpacityLinkedSlots.Add(idx);
+            Viewer.SetOpacityBarValue(1.0);
+            ApplyZoneOpacityToLinkedSlots();
+            return;
         }
+
+        // Sync bar to memorized value for selected zone
+        if (_zoneOpacityByZone.TryGetValue(zoneId.Value, out var zv))
+            _zoneOpacityValue01 = Clamp01(zv);
+        else
+            _zoneOpacityValue01 = 1.0;
+
+        Viewer.SetOpacityBarValue(_zoneOpacityValue01);
+        ApplyZoneOpacityToLinkedSlots();
     }
 
     private void ApplyZoneOpacityToLinkedSlots()
     {
-        if (_doc == null || Viewer == null) return;
+        if (!_uiReady || Viewer == null) return;
 
-        // Reset all displayed images to full opacity
+        if (_zoneOpacityAllZones)
+        {
+            Viewer.SetAllAmbientDisplayedOpacity(_zoneOpacityValue01);
+            return;
+        }
+
+        // Reset baseline
         Viewer.SetAllAmbientDisplayedOpacity(1.0);
 
-        // Apply selected opacity only to linked slots
-        foreach (var idx in _zoneOpacityLinkedSlots)
-            Viewer.SetAmbientDisplayedOpacity(idx, _zoneOpacityValue);
-    }
+        if (_doc == null) return;
 
-    private void ZoneOpacityCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (_zoneOpacitySelectedZoneId == null) return;
+        // Combine per-zone opacity per feature using MIN (most restrictive)
+        var perFeature = new double[23];
+        for (int i = 0; i < perFeature.Length; i++)
+            perFeature[i] = 1.0;
 
-        _zoneOpacityDragging = true;
-        ZoneOpacityCanvas.CaptureMouse();
-        SetZoneOpacityFromMouse(e.GetPosition(ZoneOpacityCanvas).X);
-        e.Handled = true;
-    }
+        foreach (var z in _doc.Zones)
+        {
+            if (!_zoneOpacityByZone.TryGetValue(z.Id, out var zv))
+                continue; // implicit 1.0
 
-    private void ZoneOpacityCanvas_MouseMove(object sender, MouseEventArgs e)
-    {
-        if (!_zoneOpacityDragging) return;
-        SetZoneOpacityFromMouse(e.GetPosition(ZoneOpacityCanvas).X);
-    }
+            zv = Clamp01(zv);
 
-    private void ZoneOpacityCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        if (!_zoneOpacityDragging) return;
-        _zoneOpacityDragging = false;
-        ZoneOpacityCanvas.ReleaseMouseCapture();
-        e.Handled = true;
-    }
+            for (int featureId = 0; featureId <= 22; featureId++)
+            {
+                if (!FeatureZoneMap.FeatureBelongsToZone(featureId, z.Id))
+                    continue;
 
-    private void ZoneOpacityCanvas_LostMouseCapture(object sender, MouseEventArgs e)
-    {
-        _zoneOpacityDragging = false;
-    }
+                if (zv < perFeature[featureId])
+                    perFeature[featureId] = zv;
+            }
+        }
 
-    private void SetZoneOpacityFromMouse(double mouseX)
-    {
-        double w = ZoneOpacityBar.ActualWidth;
-        if (w <= 1) w = ZoneOpacityCanvas.ActualWidth;
-        if (w <= 1) return;
-
-        double v = mouseX / w;
-        if (v < 0) v = 0;
-        if (v > 1) v = 1;
-
-        // Left = 0% (transparent), Right = 100% (full)
-        _zoneOpacityValue = v;
-
-        ApplyZoneOpacityValueToCursor();
-        ApplyZoneOpacityToLinkedSlots();
-    }
-
-    private void ApplyZoneOpacityValueToCursor()
-    {
-        double w = ZoneOpacityBar.ActualWidth;
-        if (w <= 1) w = ZoneOpacityCanvas.ActualWidth;
-        if (w <= 1) return;
-
-        double cursorW = ZoneOpacityCursor.ActualWidth;
-        if (cursorW <= 1) cursorW = 12;
-
-        double x = (_zoneOpacityValue * w) - (cursorW / 2.0);
-        if (x < 0) x = 0;
-        if (x > w - cursorW) x = w - cursorW;
-
-        System.Windows.Controls.Canvas.SetLeft(ZoneOpacityCursor, x);
+        for (int featureId = 0; featureId <= 22; featureId++)
+        {
+            double v = perFeature[featureId];
+            if (v < 1.0)
+                Viewer.SetAmbientDisplayedOpacity(featureId, v);
+        }
     }
 }

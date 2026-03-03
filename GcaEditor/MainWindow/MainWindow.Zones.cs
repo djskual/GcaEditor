@@ -80,6 +80,7 @@ public partial class MainWindow
         }
 
         Viewer.SelectZoneById(it.Id);
+        UpdateZoneOpacitySelection(it.Id);
     }
 
     private void AddZone_Click(object sender, RoutedEventArgs e)
@@ -161,6 +162,7 @@ public partial class MainWindow
 
         Viewer.LoadDocument(_doc);
         RefreshZonesUi();
+        UpdateZoneOpacitySelection(null);
     }
 
     private void AddZoneInternal(ushort id, double centerX, double centerY)

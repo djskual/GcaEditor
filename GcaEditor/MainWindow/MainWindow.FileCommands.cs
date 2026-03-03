@@ -74,7 +74,9 @@ public partial class MainWindow
 
         Viewer.SetBackground(bi);
         UpdateMibLabelFromBackground(bi);
-        Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
+        var fitH = ViewerHost.ActualHeight;
+
+        Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, fitH);
 
         // Load GCA
         LoadGcaFromPath(gcaPath);
@@ -182,7 +184,11 @@ public partial class MainWindow
     private void ViewerHost_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (Viewer.HasBackground)
-            Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
+        {
+            var fitH = ViewerHost.ActualHeight;
+
+            Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, fitH);
+        }
     }
 
     private void OpenGca_Click(object sender, RoutedEventArgs e)

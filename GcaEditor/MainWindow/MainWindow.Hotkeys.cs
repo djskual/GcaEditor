@@ -131,10 +131,6 @@ public partial class MainWindow
             Viewer.LoadDocument(_doc);
             ApplyAmbientSideToViewer();
             RefreshAmbientUi();
-
-            // Re-apply zone opacity after re-render (if a zone is selected)
-            if (_zoneOpacitySelectedZoneId != null)
-                ApplyZoneOpacityToLinkedSlots();
         }
 
         _ambientNudgeNeedsRefresh = false;
