@@ -24,6 +24,7 @@ public sealed class AmbientImageOverlay
 
     private Color _tint = Colors.White;
     private readonly Dictionary<int, (Color tint, BitmapSource bmp)> _tintedCache = new();
+    private readonly bool[] _tintEnabled = new bool[23];
 
     public AmbientImageOverlay(ViewerContext ctx)
     {
@@ -33,6 +34,7 @@ public sealed class AmbientImageOverlay
     public void ClearAll()
     {
         Array.Clear(_slots, 0, _slots.Length);
+        Array.Clear(_tintEnabled, 0, _tintEnabled.Length);
         _ctx.AmbientLayer.Children.Clear();
         _images.Clear();
         _tintedCache.Clear();
@@ -42,9 +44,25 @@ public sealed class AmbientImageOverlay
     {
         if (index < 0 || index >= _slots.Length) return;
         _slots[index] = null;
+        _tintEnabled[index] = false;
         _tintedCache.Remove(index);
         if (_images.Remove(index, out var img))
             _ctx.AmbientLayer.Children.Remove(img);
+    }
+
+    public void SetTintEnabled(int index, bool enabled)
+    {
+        if (index < 0 || index >= _tintEnabled.Length) return;
+        _tintEnabled[index] = enabled;
+
+        // Force refresh for this slot (tint selection affects final bitmap)
+        _tintedCache.Remove(index);
+        if (_images.TryGetValue(index, out var img))
+        {
+            var src = GetTintedForIndex(index);
+            if (src != null)
+                img.Source = src;
+        }
     }
 
     public void SetTintColor(Color tint)
@@ -168,6 +186,10 @@ public sealed class AmbientImageOverlay
         if (baseBmp == null) return null;
 
         if (_tint == Colors.White)
+            return baseBmp;
+
+        // If this slot is not selected for RGB tinting, keep it white.
+        if (index < 0 || index >= _tintEnabled.Length || !_tintEnabled[index])
             return baseBmp;
 
         if (_tintedCache.TryGetValue(index, out var cached) && cached.tint == _tint)

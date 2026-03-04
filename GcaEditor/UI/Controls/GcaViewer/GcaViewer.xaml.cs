@@ -107,6 +107,9 @@ public partial class GcaViewer : UserControl
     public void SetAmbientTintColor(Color tint)
         => _ambient.SetTintColor(tint);
 
+    public void SetAmbientTintEnabledForSlot(int index, bool enabled)
+        => _ambient.SetTintEnabled(index, enabled);
+
     public BitmapSource? GetAmbientSlotBitmap(int index)
         => _ambient.GetSlotBitmap(index);
 }

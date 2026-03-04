@@ -25,6 +25,11 @@ public partial class MainWindow
     private readonly bool[] _ambientVisibleLhd = Enumerable.Repeat(true, 23).ToArray();
     private readonly bool[] _ambientVisibleRhd = Enumerable.Repeat(true, 23).ToArray();
 
+    // Per-feature selection for RGB colorization.
+    // When true, the feature is affected by color changes; otherwise it stays white.
+    private readonly bool[] _ambientRgbEnabledLhd = new bool[23];
+    private readonly bool[] _ambientRgbEnabledRhd = new bool[23];
+
     private int? _placingAmbientIndex = null;
     private int? _movingAmbientIndex = null;
 
@@ -183,10 +188,14 @@ public partial class MainWindow
         Viewer.ClearAllAmbient();
 
         var slots = (_side == DriveSide.LHD) ? _ambientLhd : _ambientRhd;
+        var rgb = (_side == DriveSide.LHD) ? _ambientRgbEnabledLhd : _ambientRgbEnabledRhd;
         for (int i = 0; i < slots.Length; i++)
         {
             if (slots[i] != null)
                 Viewer.SetAmbientSlot(i, slots[i]!);
+
+            // Apply per-feature RGB selection for tinting
+            Viewer.SetAmbientTintEnabledForSlot(i, rgb[i]);
         }
     }
 
@@ -200,6 +209,8 @@ public partial class MainWindow
         var names = (_side == DriveSide.LHD) ? _ambientLhdName : _ambientRhdName;
         var vis = (_side == DriveSide.LHD) ? _ambientVisibleLhd : _ambientVisibleRhd;
 
+        var rgb = (_side == DriveSide.LHD) ? _ambientRgbEnabledLhd : _ambientRgbEnabledRhd;
+
         for (int i = 0; i <= 22; i++)
         {
             bool loaded = slots[i] != null;
@@ -211,12 +222,11 @@ public partial class MainWindow
                     : "Loaded (pending)")
                 : (positioned ? "[GCA] positioned (missing file)" : "Empty");
 
-            string file = loaded && !string.IsNullOrWhiteSpace(names[i]) ? names[i]! : "";
-
             AmbientList.Items.Add(new AmbientSlotItem
             {
                 Index = i,
-                Display = $"{i:00} - {status} {file}".TrimEnd()
+                Display = status,
+                RgbEnabled = rgb[i]
             });
         }
 
@@ -433,6 +443,24 @@ public partial class MainWindow
     private void AmbientList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         UpdateAmbientButtons();
+    }
+
+    private void AmbientRgbCheckbox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox cb) return;
+        if (cb.DataContext is not AmbientSlotItem it) return;
+
+        bool enabled = cb.IsChecked == true;
+
+        var rgb = (_side == DriveSide.LHD) ? _ambientRgbEnabledLhd : _ambientRgbEnabledRhd;
+        if (it.Index < 0 || it.Index > 22) return;
+
+        rgb[it.Index] = enabled;
+        it.RgbEnabled = enabled;
+
+        // Apply immediately to viewer: checked slots are affected by the color bar tint.
+        if (Viewer != null)
+            Viewer.SetAmbientTintEnabledForSlot(it.Index, enabled);
     }
 
     private void ToggleAmbientVisibility_Click(object sender, RoutedEventArgs e)

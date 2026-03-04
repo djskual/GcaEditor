@@ -145,13 +145,43 @@
                             <RadioButton x:Name="SideRhd" Content="RHD" Checked="Side_Checked"/>
                         </StackPanel>
 
-                        <!-- List of slots -->
-                        <ListBox x:Name="AmbientList"
-                                 Grid.Row="2"
-                                 Height="150"
-                                 SelectionChanged="AmbientList_SelectionChanged"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                        <!-- List of slots (with RGB selection checkbox) -->
+                        <ListView x:Name="AmbientList"
+                                  Grid.Row="2"
+                                  Height="150"
+                                  SelectionChanged="AmbientList_SelectionChanged"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="RGB" Width="42">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding RgbEnabled}"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalAlignment="Center"
+                                                          Checked="AmbientRgbCheckbox_Changed"
+                                                          Unchecked="AmbientRgbCheckbox_Changed"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+
+                                    <GridViewColumn Header="Slot" Width="46">
+                                        <GridViewColumn.DisplayMemberBinding>
+                                            <Binding Path="Index" StringFormat="{}{0:00}"/>
+                                        </GridViewColumn.DisplayMemberBinding>
+                                    </GridViewColumn>
+
+                                    <GridViewColumn Header="Status" Width="210">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
 
                         <TextBlock x:Name="AmbientMoveHint"
                                    Grid.Row="4"
