@@ -22,6 +22,9 @@ public sealed class AmbientImageOverlay
     // slot index -> WPF Image element
     private readonly Dictionary<int, Image> _images = new();
 
+    private Color _tint = Colors.White;
+    private readonly Dictionary<int, (Color tint, BitmapSource bmp)> _tintedCache = new();
+
     public AmbientImageOverlay(ViewerContext ctx)
     {
         _ctx = ctx;
@@ -32,14 +35,31 @@ public sealed class AmbientImageOverlay
         Array.Clear(_slots, 0, _slots.Length);
         _ctx.AmbientLayer.Children.Clear();
         _images.Clear();
+        _tintedCache.Clear();
     }
 
     public void ClearSlot(int index)
     {
         if (index < 0 || index >= _slots.Length) return;
         _slots[index] = null;
+        _tintedCache.Remove(index);
         if (_images.Remove(index, out var img))
             _ctx.AmbientLayer.Children.Remove(img);
+    }
+
+    public void SetTintColor(Color tint)
+    {
+        _tint = tint;
+
+        // Refresh currently displayed images
+        foreach (var kv in _images)
+        {
+            int idx = kv.Key;
+            var img = kv.Value;
+            var src = GetTintedForIndex(idx);
+            if (src != null)
+                img.Source = src;
+        }
     }
 
     public bool HasSlot(int index) => index >= 0 && index < _slots.Length && _slots[index] != null;
@@ -115,11 +135,15 @@ public sealed class AmbientImageOverlay
             if (bmp == null)
                 continue;
 
+            var displayBmp = GetTintedForIndex(idx);
+            if (displayBmp == null)
+                continue;
+
             if (!_images.TryGetValue(idx, out var img))
             {
                 img = new Image
                 {
-                    Source = bmp,
+                    Source = displayBmp,
                     Stretch = Stretch.None,
                     SnapsToDevicePixels = true,
                     IsHitTestVisible = false
@@ -130,12 +154,56 @@ public sealed class AmbientImageOverlay
             }
             else
             {
-                img.Source = bmp;
+                img.Source = displayBmp;
             }
 
             Canvas.SetLeft(img, x);
             Canvas.SetTop(img, y);
         }
+    }
+
+    private BitmapSource? GetTintedForIndex(int index)
+    {
+        var baseBmp = GetSlotBitmap(index);
+        if (baseBmp == null) return null;
+
+        if (_tint == Colors.White)
+            return baseBmp;
+
+        if (_tintedCache.TryGetValue(index, out var cached) && cached.tint == _tint)
+            return cached.bmp;
+
+        var tinted = TintWhiteAlphaBitmap(baseBmp, _tint);
+        _tintedCache[index] = (_tint, tinted);
+        return tinted;
+    }
+
+    private static BitmapSource TintWhiteAlphaBitmap(BitmapSource src, Color tint)
+    {
+        // src is BGRA32 with RGB=255 and A=mask. We keep alpha and replace RGB with tint.
+        int w = src.PixelWidth;
+        int h = src.PixelHeight;
+        int stride = w * 4;
+        var buf = new byte[h * stride];
+        src.CopyPixels(buf, stride, 0);
+
+        for (int i = 0; i < buf.Length; i += 4)
+        {
+            // keep alpha in buf[i+3]
+            buf[i + 0] = tint.B;
+            buf[i + 1] = tint.G;
+            buf[i + 2] = tint.R;
+        }
+
+        var bmp = BitmapSource.Create(
+            w, h,
+            96, 96,
+            PixelFormats.Bgra32,
+            null,
+            buf,
+            stride);
+        bmp.Freeze();
+        return bmp;
     }
 
     private static byte[] ConvertToWhiteAlpha(byte[] bgra)

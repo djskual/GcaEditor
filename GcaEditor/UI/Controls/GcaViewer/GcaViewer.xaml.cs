@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GcaEditor.Models;
 using GcaEditor.UI.Viewer;
@@ -102,6 +103,9 @@ public partial class GcaViewer : UserControl
 
     public void SetAllAmbientDisplayedOpacity(double opacity)
         => _ambient.SetAllDisplayedOpacity(opacity);
+
+    public void SetAmbientTintColor(Color tint)
+        => _ambient.SetTintColor(tint);
 
     public BitmapSource? GetAmbientSlotBitmap(int index)
         => _ambient.GetSlotBitmap(index);

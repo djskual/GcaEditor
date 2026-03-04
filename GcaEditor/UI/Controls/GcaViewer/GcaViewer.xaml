@@ -12,6 +12,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <ScrollViewer x:Name="EditorScroll"
@@ -146,6 +147,45 @@
                         </Canvas>
                     </Border>
 
+                </Grid>
+            </Border>
+
+            <!-- Color bar -->
+            <Border x:Name="ColorBar"
+                    Grid.Row="3"
+                    Margin="0,6,0,0"
+                    Background="#141414"
+                    CornerRadius="8"
+                    Padding="10,6"
+                    SnapsToDevicePixels="True">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Colors icon -->
+                    <Image Source="/Assets/colors.png"
+                           Width="18"
+                           Height="18"
+                           Margin="0,0,10,0"
+                           VerticalAlignment="Center"/>
+                    <UniformGrid x:Name="ColorSwatches"
+                                 Grid.Column="1"
+                                 Columns="10"
+                                 Height="18"
+                                 VerticalAlignment="Center">
+                        <Border Background="White"     Margin="1" CornerRadius="3" Tag="#FFFFFFFF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="Red"       Margin="1" CornerRadius="3" Tag="#FFFF0000" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FFFF7A00" Margin="1" CornerRadius="3" Tag="#FFFF7A00" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="Yellow"    Margin="1" CornerRadius="3" Tag="#FFFFFF00" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FF00FF00" Margin="1" CornerRadius="3" Tag="#FF00FF00" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FF00FFB3" Margin="1" CornerRadius="3" Tag="#FF00FFB3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FF00B3FF" Margin="1" CornerRadius="3" Tag="#FF00B3FF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FF0066FF" Margin="1" CornerRadius="3" Tag="#FF0066FF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FF7A00FF" Margin="1" CornerRadius="3" Tag="#FF7A00FF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <Border Background="#FFFF00B3" Margin="1" CornerRadius="3" Tag="#FFFF00B3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                    </UniformGrid>
                 </Grid>
             </Border>
         </Grid>
