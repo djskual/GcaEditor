@@ -16,6 +16,7 @@ public partial class GcaViewer
     private double _opacityValue01 = 1.0;
 
     private bool _opacityAllZones;
+    private bool _suppressAllZonesEvent;
 
     private void InitOpacityBar()
     {
@@ -50,8 +51,24 @@ public partial class GcaViewer
 
     private void AllZonesButton_Changed(object? sender, RoutedEventArgs e)
     {
+        if (_suppressAllZonesEvent) return;
         _opacityAllZones = AllZonesButton?.IsChecked == true;
         OpacityAllZonesChanged?.Invoke(this, _opacityAllZones);
+    }
+
+    public void SetOpacityAllZonesChecked(bool isChecked)
+    {
+        if (AllZonesButton == null) return;
+        try
+        {
+            _suppressAllZonesEvent = true;
+            AllZonesButton.IsChecked = isChecked;
+            _opacityAllZones = isChecked;
+        }
+        finally
+        {
+            _suppressAllZonesEvent = false;
+        }
     }
 
     public bool GetOpacityAllZonesEnabled()

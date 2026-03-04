@@ -117,6 +117,35 @@ public partial class MainWindow : Window
                 _suppressListSelection = false;
             }
 
+            // Selection rules with AllZones:
+            // - When AllZones is toggled ON, all suns are cleared.
+            // - Clicking a sun while AllZones is ON disables AllZones.
+            // - Clicking outside (zoneId == null) disables AllZones.
+            if (zoneId == null)
+            {
+                if (_ignoreNextNullZoneSelection)
+                {
+                    _ignoreNextNullZoneSelection = false;
+                    UpdateZoneOpacitySelection(null);
+                    return;
+                }
+
+                if (_zoneOpacityAllZones)
+                {
+                    Viewer.SetOpacityAllZonesChecked(false);
+                    _zoneOpacityAllZones = false;
+                }
+
+                UpdateZoneOpacitySelection(null);
+                return;
+            }
+
+            if (_zoneOpacityAllZones)
+            {
+                Viewer.SetOpacityAllZonesChecked(false);
+                _zoneOpacityAllZones = false;
+            }
+
             UpdateZoneOpacitySelection(zoneId);
         };
 

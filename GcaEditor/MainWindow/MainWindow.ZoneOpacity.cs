@@ -7,6 +7,7 @@ namespace GcaEditor;
 public partial class MainWindow
 {
     private ushort? _zoneOpacitySelectedZoneId;
+    private bool _ignoreNextNullZoneSelection;
 
     // Per-zone memory. Missing entry means 1.0.
     private readonly Dictionary<ushort, double> _zoneOpacityByZone = new();
@@ -72,6 +73,12 @@ public partial class MainWindow
 
             Viewer.SetOpacityBarEnabled(true);
             Viewer.SetOpacityBarValue(1.0);
+
+            // AllZones behaves like a selection: clear any selected zone
+            // but do not treat this programmatic clear as a user click outside.
+            _ignoreNextNullZoneSelection = true;
+            Viewer.ClearSelection();
+
             ApplyZoneOpacityToLinkedSlots();
             return;
         }
