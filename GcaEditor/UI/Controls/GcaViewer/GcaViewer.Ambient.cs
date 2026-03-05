@@ -126,4 +126,12 @@ public partial class GcaViewer
         return false;
     }
 
+    public void SetAmbientSlotVisible(int index, bool visible)
+    {
+        if (visible && !_ambient.IsDisplayed(index))
+            RenderAmbientFromDoc();
+
+        _ambient.SetDisplayedVisible(index, visible);
+    }
+
 }

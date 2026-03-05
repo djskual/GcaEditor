@@ -9,62 +9,22 @@
 
   <ItemGroup>
     <None Remove="Assets\brigth.png" />
-    <None Remove="Assets\button.png" />
     <None Remove="Assets\colors.png" />
-    <None Remove="Assets\cursor.png" />
-    <None Remove="Assets\left.png" />
-    <None Remove="Assets\line.png" />
-    <None Remove="Assets\minus.png" />
-    <None Remove="Assets\plus.png" />
-    <None Remove="Assets\right.png" />
     <None Remove="Assets\sun.png" />
     <None Remove="Assets\sun_selected.png" />
-    <None Remove="Assets\tile_left.png" />
-    <None Remove="Assets\tile_center.png" />
-    <None Remove="Assets\tile_rigth.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\bright.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Assets\button.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Assets\colors.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\cursor.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\left.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\line.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\minus.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\plus.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\right.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\sun.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\sun_selected.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\tile_center.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\tile_left.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\tile_right.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

@@ -493,10 +493,7 @@ public partial class MainWindow
 
         vis[idxSlot] = !vis[idxSlot];
 
-        if (vis[idxSlot])
-            Viewer.SetAmbientSlot(idxSlot, slots[idxSlot]!);
-        else
-            Viewer.ClearAmbientSlot(idxSlot);
+        Viewer.SetAmbientSlotVisible(idxSlot, vis[idxSlot]);
 
         RefreshAmbientUi();
         UpdateAmbientButtons();

@@ -1,10 +1,11 @@
+using GcaEditor.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using GcaEditor.Imaging;
 
 namespace GcaEditor.UI.Viewer;
 
@@ -249,4 +250,12 @@ public sealed class AmbientImageOverlay
         }
         return dst;
     }
+
+    public void SetDisplayedVisible(int index, bool visible)
+    {
+        if (_images.TryGetValue(index, out var img))
+            img.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
+    }
+
+    public bool IsDisplayed(int index) => _images.ContainsKey(index);
 }
