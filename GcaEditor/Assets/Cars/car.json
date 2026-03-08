@@ -112,6 +112,48 @@
       "available_mibs": [ "MIB25", "MIB2" ],
       "gcas": [ 0, 1 ],
       "default_gca": 0
+    },
+    {
+      "id": "0400000000",
+      "name": "SE Leon Generic MIB2",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0402010600",
+      "name": "SE Arona",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0402070000",
+      "name": "SE Ibiza",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0403020600",
+      "name": "SE Ateca",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0403020601",
+      "name": "SE Teracco",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0403070006",
+      "name": "SE Leon",
+      "available_mibs": [ "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
     }
   ]
 }
