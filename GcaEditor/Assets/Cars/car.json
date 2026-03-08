@@ -77,6 +77,41 @@
       "available_mibs": [ "MIB25" ],
       "gcas": [ 0, 1 ],
       "default_gca": 0
+    },
+    {
+      "id": "0300000000",
+      "name": "SK Octavia Generic MIB25",
+      "available_mibs": [ "MIB25" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0303020600",
+      "name": "SK Karoq",
+      "available_mibs": [ "MIB25" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0303020601",
+      "name": "SK Kodiaq",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0303070100",
+      "name": "SK Octavia",
+      "available_mibs": [ "MIB25" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
+    },
+    {
+      "id": "0304080100",
+      "name": "SK Superb",
+      "available_mibs": [ "MIB25", "MIB2" ],
+      "gcas": [ 0, 1 ],
+      "default_gca": 0
     }
   ]
 }
