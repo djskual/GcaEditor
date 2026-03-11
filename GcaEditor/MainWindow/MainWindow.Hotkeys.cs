@@ -1,5 +1,4 @@
 using GcaEditor.Models;
-using System;
 using System.Windows.Input;
 
 namespace GcaEditor;

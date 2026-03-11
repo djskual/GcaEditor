@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace GcaEditor.Data;
 
 public static class FeatureZoneMap

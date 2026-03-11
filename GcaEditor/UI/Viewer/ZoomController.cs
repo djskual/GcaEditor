@@ -1,6 +1,3 @@
-using System;
-using System.Windows;
-
 namespace GcaEditor.UI.Viewer;
 
 public sealed class ZoomController

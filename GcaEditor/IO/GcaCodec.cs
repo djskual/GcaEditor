@@ -1,6 +1,5 @@
-﻿using System;
+﻿using GcaEditor.Models;
 using System.IO;
-using GcaEditor.Models;
 
 namespace GcaEditor.IO;
 

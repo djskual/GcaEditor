@@ -1,6 +1,6 @@
+using GcaEditor.Data;
 using System.Windows;
 using System.Windows.Controls;
-using GcaEditor.Data;
 
 namespace GcaEditor.Views;
 

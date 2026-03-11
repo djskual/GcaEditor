@@ -1,8 +1,6 @@
-using System;
-using System.Linq;
+using GcaEditor.Models;
 using System.Windows;
 using System.Windows.Controls;
-using GcaEditor.Models;
 
 namespace GcaEditor;
 

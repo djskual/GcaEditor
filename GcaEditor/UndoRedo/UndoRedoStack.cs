@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace GcaEditor.UndoRedo;
 
 public sealed class UndoRedoStack<T>

@@ -1,7 +1,5 @@
-using System;
-using System.Windows;
-using System.Windows.Input;
 using GcaEditor.Models;
+using System.Windows.Input;
 
 namespace GcaEditor;
 

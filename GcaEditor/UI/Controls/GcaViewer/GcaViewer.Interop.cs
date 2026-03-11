@@ -1,4 +1,3 @@
-using System;
 using System.Windows.Interop;
 
 namespace GcaEditor.UI.Controls;

@@ -1,17 +1,7 @@
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using GcaEditor.UI.Interop;
 using GcaEditor.Data;
-using GcaEditor.IO;
 using GcaEditor.Models;
 using GcaEditor.UndoRedo;
+using System.Windows;
 
 namespace GcaEditor;
 

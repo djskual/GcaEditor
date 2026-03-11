@@ -1,5 +1,3 @@
-using System.Windows;
-
 namespace GcaEditor.UI.Controls;
 
 public partial class GcaViewer
