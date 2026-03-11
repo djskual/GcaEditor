@@ -228,17 +228,20 @@ public sealed class AmbientImageOverlay
 
     private static byte[] ConvertToWhiteAlpha(byte[] bgra)
     {
-        // Input BGRA32. We output BGRA32 where RGB=255 and A=luminance (max channel).
+        // Input BGRA32. We output BGRA32 where RGB=255 and alpha respects both source brightness and source alpha.
         var dst = new byte[bgra.Length];
         for (int i = 0; i < bgra.Length; i += 4)
         {
             byte b = bgra[i + 0];
             byte g = bgra[i + 1];
             byte r = bgra[i + 2];
+            byte srcA = bgra[i + 3];
 
-            byte a = r;
-            if (g > a) a = g;
-            if (b > a) a = b;
+            byte lum = r;
+            if (g > lum) lum = g;
+            if (b > lum) lum = b;
+
+            byte a = (byte)((lum * srcA) / 255);
 
             dst[i + 0] = 255; // B
             dst[i + 1] = 255; // G

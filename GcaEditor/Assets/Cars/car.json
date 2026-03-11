@@ -73,7 +73,7 @@
     },
     {
       "id": "0205010100",
-      "name": "VW Unknown (0205010100)",
+      "name": "VW Phideon",
       "available_mibs": [ "MIB25" ],
       "gcas": [ 0, 1 ],
       "default_gca": 0
