@@ -172,10 +172,11 @@
                            VerticalAlignment="Center"/>
                     <UniformGrid x:Name="ColorSwatches"
                                  Grid.Column="1"
-                                 Columns="10"
+                                 Columns="30"
                                  Height="18"
                                  VerticalAlignment="Center">
-                        <Border Background="White"     Margin="1" CornerRadius="3" Tag="#FFFFFFFF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        <!-- 10 colors -->
+                        <!--<Border Background="White"     Margin="1" CornerRadius="3" Tag="#FFFFFFFF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
                         <Border Background="Red"       Margin="1" CornerRadius="3" Tag="#FFFF0000" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
                         <Border Background="#FFFF7A00" Margin="1" CornerRadius="3" Tag="#FFFF7A00" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
                         <Border Background="Yellow"    Margin="1" CornerRadius="3" Tag="#FFFFFF00" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
@@ -185,6 +186,38 @@
                         <Border Background="#FF0066FF" Margin="1" CornerRadius="3" Tag="#FF0066FF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
                         <Border Background="#FF7A00FF" Margin="1" CornerRadius="3" Tag="#FF7A00FF" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
                         <Border Background="#FFFF00B3" Margin="1" CornerRadius="3" Tag="#FFFF00B3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"/>
+                        -->
+                        <!-- 30 colors -->
+                        <Border Background="#FFFFFFFF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFFFFFF"/>
+                        <Border Background="#FFFF0000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFF0000"/>
+                        <Border Background="#FFFF2000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFF2000"/>
+                        <Border Background="#FFFF4000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFF4000"/>
+                        <Border Background="#FFFF6000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFF6000"/>
+                        <Border Background="#FFFF8000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFF8000"/>
+                        <Border Background="#FFFFA000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFFA000"/>
+                        <Border Background="#FFFFC000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFFC000"/>
+                        <Border Background="#FFFFE000" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFFE000"/>
+                        <Border Background="#FFFFFF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFFFF00"/>
+                        <Border Background="#FFE0FF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFE0FF00"/>
+                        <Border Background="#FFC0FF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFC0FF00"/>
+                        <Border Background="#FFA0FF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFA0FF00"/>
+                        <Border Background="#FF80FF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF80FF00"/>
+                        <Border Background="#FF60FF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF60FF00"/>
+                        <Border Background="#FF00FF00" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF00FF00"/>
+                        <Border Background="#FF00FF40" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF00FF40"/>
+                        <Border Background="#FF00FF80" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF00FF80"/>
+                        <Border Background="#FF00FFC0" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF00FFC0"/>
+                        <Border Background="#FF00FFFF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF00FFFF"/>
+                        <Border Background="#FF00C0FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF00C0FF"/>
+                        <Border Background="#FF0080FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF0080FF"/>
+                        <Border Background="#FF0000FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF0000FF"/>
+                        <Border Background="#FF2000FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF2000FF"/>
+                        <Border Background="#FF4000FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF4000FF"/>
+                        <Border Background="#FF6000FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF6000FF"/>
+                        <Border Background="#FF8000FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FF8000FF"/>
+                        <Border Background="#FFAA00FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFAA00FF"/>
+                        <Border Background="#FFCC00FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFCC00FF"/>
+                        <Border Background="#FFFF00FF" Margin="1" CornerRadius="3" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown" Tag="#FFFF00FF"/>
                     </UniformGrid>
                 </Grid>
             </Border>
