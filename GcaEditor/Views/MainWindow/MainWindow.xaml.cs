@@ -2,6 +2,7 @@ using GcaEditor.Data;
 using GcaEditor.Models;
 using GcaEditor.UndoRedo;
 using System.Windows;
+using System.IO;
 
 namespace GcaEditor;
 
@@ -19,6 +20,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        Title = $"GcaEditor {GetBuildTag()}";
 
         _zoneCatalog = ZoneCatalog.LoadOrDefault();
         _history = new UndoRedoStack<EditorState>(s => s.DeepClone());
@@ -42,7 +45,27 @@ public partial class MainWindow : Window
         };
     }
 
-    private void SetStartupLocked(bool locked)
+    private static string GetBuildTag()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "git-tag.txt");
+            if (!File.Exists(path))
+                return "unknown";
+
+            var tag = File.ReadAllText(path).Trim();
+            if (string.IsNullOrWhiteSpace(tag))
+                return "unknown";
+
+            return tag;
+        }
+        catch
+        {
+            return "unknown";
+        }
+    }
+    
+    void SetStartupLocked(bool locked)
     {
         // Choose car is always available
         if (ChooseCarButton != null)

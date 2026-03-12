@@ -12,6 +12,7 @@
     <None Remove="Assets\colors.png" />
     <None Remove="Assets\sun.png" />
     <None Remove="Assets\sun_selected.png" />
+    <None Remove="git-tag.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,4 +42,27 @@
     </Content>
   </ItemGroup>
 
+  <PropertyGroup>
+    <GitTag>unknown</GitTag>
+    <GeneratedGitTagFile>$(IntermediateOutputPath)git-tag.txt</GeneratedGitTagFile>
+  </PropertyGroup>
+
+  <Target Name="GenerateGitTagFile" BeforeTargets="Build">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;git tag --sort=-creatordate | Select-Object -First 1&quot;" WorkingDirectory="$(SolutionDir)" ConsoleToMSBuild="true" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitTag" />
+    </Exec>
+
+    <PropertyGroup>
+      <GitTag Condition="'$(GitTag)' == ''">unknown</GitTag>
+      <GitTag>$([System.String]::Copy('$(GitTag)').Trim())</GitTag>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GeneratedGitTagFile)" Lines="$(GitTag)" Overwrite="true" />
+
+    <Copy SourceFiles="$(GeneratedGitTagFile)" DestinationFiles="$(OutDir)git-tag.txt" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyGitTagToPublish" AfterTargets="Publish">
+    <Copy SourceFiles="$(GeneratedGitTagFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
