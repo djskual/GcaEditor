@@ -42,55 +42,11 @@ The editor allows visualization and modification of ambient lighting layouts use
 - **All Zones mode** for global brightness control
 
 Behavior:
-# GcaEditor
-
-**GcaEditor** is a WPF tool for editing **Volkswagen ambient lighting layout files (`.gca`)** used by **MIB2 / MIB2.5 infotainment systems**.
-
-The editor allows visualization and modification of ambient lighting layouts used in vehicle infotainment systems, including zone placement, feature images, brightness preview, and color simulation.
-
----
-
-# Screenshot
-
-![GcaEditor screenshot](docs/screenshot.png)
-
-*(replace this image with a screenshot of the application UI)*
-
----
-
-# Features
-
-## Vehicle layout editor
-
-- Load `.gca` layout files
-- Visualize ambient lighting zones ("suns")
-- Add and delete zones
-- Drag zones directly on the interior layout
-- Zones automatically maintain the correct **104×104 size**
-
----
-
-## Ambient feature editor
-
-- Load ambient feature PNG images
-- Drag feature images inside the vehicle layout
-- Move features using keyboard arrows
-- Fine positioning support
-- Undo / redo support
-
----
-
-## Ambient brightness preview
-
-- Dedicated brightness slider
-- Real-time ambient brightness preview
-- **Per-zone brightness memory**
-- **All Zones mode** for global brightness control
-
-Behavior:
-All Zones ON → all suns deselected
-Click sun → All Zones OFF
-Click background → suns OFF + All Zones OFF
+```
+- All Zones ON → all suns deselected
+- Click sun → All Zones OFF
+- Click background → suns OFF + All Zones OFF
+```
 
 ---
 
@@ -141,10 +97,11 @@ Supported brands currently include:
 A `.gca` file describes the layout used by the ambient lighting interface.
 
 The structure contains:
+```
 - Header
 - Zones (interactive suns)
 - Feature slots (ambient images)
-
+```
 
 Zones define where the user can interact with lighting areas.
 
@@ -168,8 +125,9 @@ Requirements:
 - **Visual Studio 2022**
 
 Clone the repository:
+```
 git clone https://github.com/djskual/GcaEditor.git
-
+```
 
 Open the solution in Visual Studio and build the project.
 
@@ -208,3 +166,9 @@ Feel free to open issues or submit pull requests.
 # Author
 
 Created by **djskual**
+
+Thanks to:
+
+- Dachillout for original researches on .gca file format,
+- Cuzoe for beta tests
+- Meesters for beta tests
