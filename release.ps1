@@ -130,6 +130,9 @@ if (-not (Test-Path $PublishDir)) {
     Fail "Publish directory not found: $PublishDir"
 }
 
+Write-Step "Writing git-tag.txt"
+Set-Content -Path (Join-Path $PublishDir "git-tag.txt") -Value $Tag -NoNewLine
+
 # -----------------------------
 # Zip
 # -----------------------------
