@@ -11,10 +11,10 @@ $ErrorActionPreference = "Stop"
 $EditorProjectPath  = ".\GcaEditor\GcaEditor.csproj"
 $UpdaterProjectPath = ".\GcaUpdater\GcaUpdater.csproj"
 
-$EditorPublishDir   = ".\GcaEditor\bin\Release\net8.0-windows\win-x64\publish"
+$ArtifactsDir       = ".\.artifacts"
+$EditorPublishDir   = ".\.artifacts\editor-publish"
 $UpdaterOutDir      = ".\.artifacts\updater-publish"
 
-$ArtifactsDir       = ".\.artifacts"
 $ZipName            = "GcaEditor_$Tag" + "_win-x64.zip"
 $ZipPath            = Join-Path $ArtifactsDir $ZipName
 $ReleaseNotes       = ".\RELEASE_NOTES.md"
@@ -130,18 +130,18 @@ if ($LASTEXITCODE -ne 0) {
 Write-Step "Preparing artifacts folder"
 if (-not (Test-Path $ArtifactsDir)) {
     New-Item -ItemType Directory -Force -Path $ArtifactsDir | Out-Null
-    (Get-Item $ArtifactsDir).Attributes += 'Hidden'
 }
 
-Remove-IfExists $ZipPath
-Remove-IfExists $UpdaterOutDir
 Remove-IfExists $EditorPublishDir
+Remove-IfExists $UpdaterOutDir
+Remove-IfExists $ZipPath
 
 # -----------------------------
 # Publish GcaEditor
+# Framework-dependent => package plus léger
 # -----------------------------
 Write-Step "Publishing GcaEditor"
-dotnet publish $EditorProjectPath -c Release -r win-x64 --self-contained true
+dotnet publish $EditorProjectPath -c Release -o $EditorPublishDir
 if ($LASTEXITCODE -ne 0) {
     Fail "dotnet publish failed for GcaEditor."
 }
@@ -154,7 +154,8 @@ Write-Step "Writing git-tag.txt"
 Set-Content -Path (Join-Path $EditorPublishDir "git-tag.txt") -Value $Tag -NoNewLine
 
 # -----------------------------
-# Publish GcaUpdater (single file)
+# Publish GcaUpdater
+# Single-file self-contained => un seul Updater.exe
 # -----------------------------
 Write-Step "Publishing GcaUpdater"
 dotnet publish $UpdaterProjectPath `
@@ -175,7 +176,7 @@ if (-not (Test-Path $UpdaterExePath)) {
 }
 
 # -----------------------------
-# Inject Updater.exe into GcaEditor publish
+# Copy Updater.exe into GcaEditor publish
 # -----------------------------
 Write-Step "Copying Updater.exe into GcaEditor publish folder"
 Copy-Item $UpdaterExePath $EditorUpdaterPath -Force
@@ -185,7 +186,7 @@ if (-not (Test-Path $EditorUpdaterPath)) {
 }
 
 # -----------------------------
-# Zip
+# Create ZIP
 # -----------------------------
 Write-Step "Creating zip"
 Compress-Archive -Path "$EditorPublishDir\*" -DestinationPath $ZipPath
@@ -195,7 +196,7 @@ if (-not (Test-Path $ZipPath)) {
 }
 
 # -----------------------------
-# GitHub Release
+# Create GitHub release
 # -----------------------------
 Write-Step "Creating GitHub release"
 gh release create $Tag $ZipPath `
@@ -213,7 +214,8 @@ if ($LASTEXITCODE -ne 0) {
 Write-Step "Deleting local zip"
 Remove-IfExists $ZipPath
 
-Write-Step "Deleting updater publish temp folder"
+Write-Step "Deleting temporary publish folders"
+Remove-IfExists $EditorPublishDir
 Remove-IfExists $UpdaterOutDir
 
 Write-Step "Resetting RELEASE_NOTES.md"
@@ -230,5 +232,6 @@ Write-Step "Resetting RELEASE_NOTES.md"
 Write-Host ""
 Write-Host "Release completed successfully." -ForegroundColor Green
 Write-Host "Tag: $Tag"
-Write-Host "Zip content: GcaEditor publish + Updater.exe + git-tag.txt"
+Write-Host "Package: $ZipName"
+Write-Host "Contents: GcaEditor + Updater.exe + git-tag.txt"
 Write-Host "Release notes have been reset."
