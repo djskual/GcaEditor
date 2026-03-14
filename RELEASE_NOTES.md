@@ -1,7 +1,2 @@
-## Added
-
-## Improved
-
-## Fixed
-
-## Cleanup
+# Release Notes
+- Reverted back to manual update

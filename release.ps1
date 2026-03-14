@@ -8,20 +8,12 @@ $ErrorActionPreference = "Stop"
 # -----------------------------
 # Config
 # -----------------------------
-$EditorProjectPath  = ".\GcaEditor\GcaEditor.csproj"
-$UpdaterProjectPath = ".\GcaUpdater\GcaUpdater.csproj"
-
-$ArtifactsDir       = ".\.artifacts"
-$EditorPublishDir   = ".\.artifacts\editor-publish"
-$UpdaterOutDir      = ".\.artifacts\updater-publish"
-
-$ZipName            = "GcaEditor_$Tag" + "_win-x64.zip"
-$ZipPath            = Join-Path $ArtifactsDir $ZipName
-$ReleaseNotes       = ".\RELEASE_NOTES.md"
-
-$UpdaterExeName     = "Updater.exe"
-$UpdaterExePath     = Join-Path $UpdaterOutDir $UpdaterExeName
-$EditorUpdaterPath  = Join-Path $EditorPublishDir $UpdaterExeName
+$ProjectPath  = ".\GcaEditor\GcaEditor.csproj"
+$PublishDir   = ".\GcaEditor\bin\Release\net8.0-windows\publish\win-x64"
+$ArtifactsDir = ".\.artifacts"
+$ZipName      = "GcaEditor_$Tag" + "_win-x64.zip"
+$ZipPath      = Join-Path $ArtifactsDir $ZipName
+$ReleaseNotes = ".\RELEASE_NOTES.md"
 
 # -----------------------------
 # Helpers
@@ -43,12 +35,6 @@ function Write-Step($msg) {
     Write-Host "==> $msg" -ForegroundColor Cyan
 }
 
-function Remove-IfExists($path) {
-    if (Test-Path $path) {
-        Remove-Item $path -Recurse -Force
-    }
-}
-
 # -----------------------------
 # Start
 # -----------------------------
@@ -67,7 +53,7 @@ Ensure-Command gh
 Write-Step "Checking GitHub CLI authentication"
 gh auth status | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    Fail "GitHub CLI is not authenticated.`nRun: gh auth login"
+    Fail "GitHub CLI is not authenticated. Run: gh auth login"
 }
 
 Write-Step "Checking git repository"
@@ -79,21 +65,14 @@ if ($LASTEXITCODE -ne 0) {
 Write-Step "Checking working tree"
 $gitStatus = git status --porcelain
 if ($gitStatus) {
-    Fail "Working tree is not clean.`nCommit or stash changes before running the release script."
-}
-
-Write-Step "Checking project files"
-if (-not (Test-Path $EditorProjectPath)) {
-    Fail "Editor project not found: $EditorProjectPath"
-}
-if (-not (Test-Path $UpdaterProjectPath)) {
-    Fail "Updater project not found: $UpdaterProjectPath"
+    Fail "Working tree is not clean. Commit or stash changes before running the release script."
 }
 
 Write-Step "Checking release notes"
 if (-not (Test-Path $ReleaseNotes)) {
     Fail "Release notes file not found: $ReleaseNotes"
 }
+
 $notesContent = Get-Content $ReleaseNotes -Raw
 if ([string]::IsNullOrWhiteSpace($notesContent)) {
     Fail "RELEASE_NOTES.md is empty."
@@ -104,6 +83,7 @@ $localTag = git tag --list $Tag
 if ($localTag) {
     Fail "Tag '$Tag' already exists locally."
 }
+
 $remoteTag = git ls-remote --tags origin "refs/tags/$Tag"
 if ($remoteTag) {
     Fail "Tag '$Tag' already exists on remote."
@@ -128,82 +108,45 @@ if ($LASTEXITCODE -ne 0) {
 # Prepare artifacts folder
 # -----------------------------
 Write-Step "Preparing artifacts folder"
-if (-not (Test-Path $ArtifactsDir)) {
+if(-not (Test-Path $ArtifactsDir)) {
     New-Item -ItemType Directory -Force -Path $ArtifactsDir | Out-Null
+    (Get-Item $ArtifactsDir).Attributes += 'Hidden'
 }
 
-Remove-IfExists $EditorPublishDir
-Remove-IfExists $UpdaterOutDir
-Remove-IfExists $ZipPath
+if (Test-Path $ZipPath) {
+    Remove-Item $ZipPath -Force
+}
 
 # -----------------------------
-# Publish GcaEditor
-# Framework-dependent => package plus léger
+# Publish
 # -----------------------------
-Write-Step "Publishing GcaEditor"
-dotnet publish $EditorProjectPath -c Release -o $EditorPublishDir
+Write-Step "Publishing application"
+dotnet publish $ProjectPath -c Release -r win-x64 --self-contained true
 if ($LASTEXITCODE -ne 0) {
-    Fail "dotnet publish failed for GcaEditor."
+    Fail "dotnet publish failed."
 }
 
-if (-not (Test-Path $EditorPublishDir)) {
-    Fail "Editor publish directory not found: $EditorPublishDir"
+if (-not (Test-Path $PublishDir)) {
+    Fail "Publish directory not found: $PublishDir"
 }
 
 Write-Step "Writing git-tag.txt"
-Set-Content -Path (Join-Path $EditorPublishDir "git-tag.txt") -Value $Tag -NoNewLine
+Set-Content -Path (Join-Path $PublishDir "git-tag.txt") -Value $Tag -NoNewLine
 
 # -----------------------------
-# Publish GcaUpdater
-# Single-file self-contained => un seul Updater.exe
-# -----------------------------
-Write-Step "Publishing GcaUpdater"
-dotnet publish $UpdaterProjectPath `
-    -c Release `
-    -r win-x64 `
-    --self-contained true `
-    -p:PublishSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfExtract=true `
-    -p:PublishTrimmed=false `
-    -o $UpdaterOutDir
-
-if ($LASTEXITCODE -ne 0) {
-    Fail "dotnet publish failed for GcaUpdater."
-}
-
-if (-not (Test-Path $UpdaterExePath)) {
-    Fail "Updater executable not found: $UpdaterExePath"
-}
-
-# -----------------------------
-# Copy Updater.exe into GcaEditor publish
-# -----------------------------
-Write-Step "Copying Updater.exe into GcaEditor publish folder"
-Copy-Item $UpdaterExePath $EditorUpdaterPath -Force
-
-if (-not (Test-Path $EditorUpdaterPath)) {
-    Fail "Failed to copy Updater.exe into editor publish folder."
-}
-
-# -----------------------------
-# Create ZIP
+# Zip
 # -----------------------------
 Write-Step "Creating zip"
-Compress-Archive -Path "$EditorPublishDir\*" -DestinationPath $ZipPath
-
+Compress-Archive -Path "$PublishDir\*" -DestinationPath $ZipPath
 if (-not (Test-Path $ZipPath)) {
     Fail "Zip was not created: $ZipPath"
 }
 
 # -----------------------------
-# Create GitHub release
+# GitHub Release
 # -----------------------------
 Write-Step "Creating GitHub release"
-gh release create $Tag $ZipPath `
-    --title "GcaEditor $Tag" `
-    --notes-file $ReleaseNotes `
-    --latest
-
+gh release create $Tag $ZipPath --title "GcaEditor $Tag" --notes-file $ReleaseNotes
 if ($LASTEXITCODE -ne 0) {
     Fail "Failed to create GitHub release."
 }
@@ -212,11 +155,7 @@ if ($LASTEXITCODE -ne 0) {
 # Cleanup
 # -----------------------------
 Write-Step "Deleting local zip"
-Remove-IfExists $ZipPath
-
-Write-Step "Deleting temporary publish folders"
-Remove-IfExists $EditorPublishDir
-Remove-IfExists $UpdaterOutDir
+Remove-Item $ZipPath -Force
 
 Write-Step "Resetting RELEASE_NOTES.md"
 @"
@@ -232,6 +171,4 @@ Write-Step "Resetting RELEASE_NOTES.md"
 Write-Host ""
 Write-Host "Release completed successfully." -ForegroundColor Green
 Write-Host "Tag: $Tag"
-Write-Host "Package: $ZipName"
-Write-Host "Contents: GcaEditor + Updater.exe + git-tag.txt"
 Write-Host "Release notes have been reset."

@@ -6,7 +6,6 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Diagnostics;
-using GcaEditor.Services;
 
 namespace GcaEditor;
 
@@ -81,30 +80,18 @@ public partial class MainWindow : Window
             if (!string.Equals(latestTag?.Trim(), currentVersion?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 var result = MessageBox.Show(
-                    $"New version available: {latestTag}\n\nUpdate now?",
+                    $"New version available: {latestTag}\n\nOpen download page?",
                     "Update available",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    var updaterPath = Path.Combine(
-                        AppDomain.CurrentDomain.BaseDirectory,
-                        "Updater.exe");
-
-                    if (!File.Exists(updaterPath))
+                    Process.Start(new ProcessStartInfo
                     {
-                        MessageBox.Show(
-                            "Updater.exe not found.",
-                            "Update error",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                        return;
-                    }
-
-                    UpdateLauncher.LaunchUpdater(currentVersion ?? "0.0.0");
-
-                    Application.Current.Shutdown();
+                        FileName = "https://github.com/djskual/GcaEditor/releases",
+                        UseShellExecute = true
+                    });
                 }
             }
             else

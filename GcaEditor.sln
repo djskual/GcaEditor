@@ -19,8 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C
 		docs\GcaEditor.png = docs\GcaEditor.png
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GcaUpdater", "GcaUpdater\GcaUpdater.csproj", "{BBD53840-0AED-63FC-A28C-A8236357603D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,10 +29,6 @@ Global
 		{74360E99-802D-4E9A-97C1-679FAAC0506D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74360E99-802D-4E9A-97C1-679FAAC0506D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74360E99-802D-4E9A-97C1-679FAAC0506D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BBD53840-0AED-63FC-A28C-A8236357603D}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{BBD53840-0AED-63FC-A28C-A8236357603D}.Debug|Any CPU.Build.0 = Debug|x64
-		{BBD53840-0AED-63FC-A28C-A8236357603D}.Release|Any CPU.ActiveCfg = Release|x64
-		{BBD53840-0AED-63FC-A28C-A8236357603D}.Release|Any CPU.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
