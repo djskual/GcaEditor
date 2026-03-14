@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -8,32 +7,28 @@ public static class UpdateLauncher
 {
     public static void LaunchUpdater(string currentVersion)
     {
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var updaterPath = Path.Combine(baseDirectory, "Updater.exe");
+        var updaterPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Updater.exe");
 
         if (!File.Exists(updaterPath))
         {
-            throw new FileNotFoundException("Updater.exe was not found next to GcaEditor.exe.", updaterPath);
+            throw new FileNotFoundException("Updater.exe not found.", updaterPath);
         }
 
-        var currentProcess = Process.GetCurrentProcess();
-
         var args =
-            $"--owner "djskual" " +
-            $"--repo "GcaEditor" " +
-            $"--currentVersion "{currentVersion}" " +
-            $"--appDir "{baseDirectory}" " +
-            $"--appExeName "GcaEditor.exe" " +
-            $"--pid "{currentProcess.Id}"";
+            $"--owner \"djskual\" " +
+            $"--repo \"GcaEditor\" " +
+            $"--currentVersion \"{currentVersion}\"";
 
-        var startInfo = new ProcessStartInfo
+        var psi = new ProcessStartInfo
         {
             FileName = updaterPath,
             Arguments = args,
-            WorkingDirectory = baseDirectory,
+            WorkingDirectory = Path.GetDirectoryName(updaterPath)!,
             UseShellExecute = true
         };
 
-        Process.Start(startInfo);
+        Process.Start(psi);
     }
 }

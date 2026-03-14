@@ -102,13 +102,7 @@ public partial class MainWindow : Window
                         return;
                     }
 
-                    UpdateLauncher.LaunchUpdater(
-                        updaterPath,
-                        owner: "djskual",
-                        repo: "GcaEditor",
-                        appPath: AppDomain.CurrentDomain.BaseDirectory,
-                        exeName: "GcaEditor.exe",
-                        currentVersion: currentVersion ?? "0.0.0");
+                    UpdateLauncher.LaunchUpdater(currentVersion ?? "0.0.0");
 
                     Application.Current.Shutdown();
                 }
