@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 # Config
 # -----------------------------
 $ProjectPath  = ".\GcaEditor\GcaEditor.csproj"
-$PublishDir   = ".\GcaEditor\bin\Release\net8.0-windows\publish\win-x64"
+$PublishDir   = ".\GcaEditor\bin\Release\net8.0-windows\win-x64\publish"
 $ArtifactsDir = ".\.artifacts"
 $ZipName      = "GcaEditor_$Tag" + "_win-x64.zip"
 $ZipPath      = Join-Path $ArtifactsDir $ZipName
