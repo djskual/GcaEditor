@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 $EditorProjectPath  = ".\GcaEditor\GcaEditor.csproj"
 $UpdaterProjectPath = ".\GcaUpdater\GcaUpdater.csproj"
 
-$EditorPublishDir   = ".\GcaEditor\bin\Release\net8.0-windows\publish\win-x64"
+$EditorPublishDir   = ".\GcaEditor\bin\Release\net8.0-windows\win-x64\publish"
 $UpdaterOutDir      = ".\.artifacts\updater-publish"
 
 $ArtifactsDir       = ".\.artifacts"
