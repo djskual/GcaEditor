@@ -5,9 +5,12 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>  </PropertyGroup>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+  </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\app.ico" />
     <None Remove="Assets\brigth.png" />
     <None Remove="Assets\colors.png" />
     <None Remove="Assets\sun.png" />
@@ -16,6 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\app.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\bright.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>

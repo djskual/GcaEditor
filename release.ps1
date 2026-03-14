@@ -159,8 +159,6 @@ Remove-Item $ZipPath -Force
 
 Write-Step "Resetting RELEASE_NOTES.md"
 @"
-# GcaEditor next release
-
 ## Added
 
 ## Improved

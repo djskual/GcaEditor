@@ -1,4 +1,7 @@
-# GcaEditor v0.1.0-beta6
+## Added
+- Added "About" section in application
+- Added application Icon
+- Added "Check for updates" functionality
 
-## Fixed
-- Fixed a bug where wrong version is displayed in the app
+## Improved
+- Improved release.ps1 script

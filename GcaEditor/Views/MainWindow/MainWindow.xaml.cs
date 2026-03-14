@@ -3,6 +3,9 @@ using GcaEditor.Models;
 using GcaEditor.UndoRedo;
 using System.Windows;
 using System.IO;
+using System.Net.Http;
+using System.Text.Json;
+using System.Diagnostics;
 
 namespace GcaEditor;
 
@@ -43,6 +46,81 @@ public partial class MainWindow : Window
 
             InitZoneOpacityUi();
         };
+    }
+
+    private async void CheckUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "GcaEditor");
+            client.Timeout = TimeSpan.FromSeconds(5);
+
+            var json = await client.GetStringAsync(
+                "https://api.github.com/repos/djskual/GcaEditor/tags");
+
+            using var doc = JsonDocument.Parse(json);
+
+            if (doc.RootElement.ValueKind != JsonValueKind.Array || doc.RootElement.GetArrayLength() == 0)
+            {
+                MessageBox.Show(
+                    "No tag found on GitHub.",
+                    "Update check",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var latestTag = doc.RootElement[0]
+                .GetProperty("name")
+                .GetString();
+
+            var currentVersion = GetBuildTag();
+
+            if (!string.Equals(latestTag?.Trim(), currentVersion?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                var result = MessageBox.Show(
+                    $"New version available: {latestTag}\n\nOpen download page?",
+                    "Update available",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "https://github.com/djskual/GcaEditor/releases",
+                        UseShellExecute = true
+                    });
+                }
+            }
+            else
+            {
+                MessageBox.Show(
+                    "You already have the latest version.",
+                    "No update",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Unable to check updates.\n\n{ex.Message}",
+                "Update error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+    }
+
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new AboutWindow
+        {
+            Owner = this
+        };
+
+        dlg.ShowDialog();
     }
 
     private static string GetBuildTag()
