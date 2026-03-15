@@ -120,8 +120,13 @@ if (Test-Path $ZipPath) {
 # -----------------------------
 # Publish
 # -----------------------------
+if (Test-Path $PublishDir) {
+    Write-Step "Cleaning publish directory"
+    Remove-Item $PublishDir -Recurse -Force
+}
+
 Write-Step "Publishing application"
-dotnet publish $ProjectPath -c Release -r win-x64 --self-contained true
+dotnet publish $ProjectPath -c Release -r win-x64 --self-contained false -p:DebugType=None -p:DebugSymbols=false
 if ($LASTEXITCODE -ne 0) {
     Fail "dotnet publish failed."
 }
@@ -159,7 +164,7 @@ Remove-Item $ZipPath -Force
 
 Write-Step "Resetting RELEASE_NOTES.md"
 @"
-#Release Notes
+# Release Notes
 ## Added
 
 ## Improved
