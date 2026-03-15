@@ -4,6 +4,7 @@ using GcaEditor.Views;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace GcaEditor;
@@ -118,7 +119,6 @@ public partial class MainWindow
 
         CaptureInitialAmbientIds();
 
-        SaveGcaButton.IsEnabled = true;
         RefreshZonesUi();
         RefreshAmbientUi();
         UpdateAmbientAvailability();
@@ -209,10 +209,7 @@ public partial class MainWindow
     private void SaveGca_Click(object sender, RoutedEventArgs e)
     {
         if (_doc == null)
-        {
-            MessageBox.Show("Aucun GCA charge.");
             return;
-        }
 
         var sfd = new SaveFileDialog
         {
@@ -225,6 +222,16 @@ public partial class MainWindow
 
         GcaCodec.Save(sfd.FileName, _doc);
         MessageBox.Show("GCA sauvegarde.");
+    }
+
+    private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        SaveGca_Click(sender, new RoutedEventArgs());
+    }
+
+    private void Save_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = _doc != null;
     }
 
     private void UpdateMibLabelFromBackground(BitmapSource bg)

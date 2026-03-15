@@ -5,19 +5,23 @@
         Icon="/Assets/app.ico"
         Title="GCA Editor"
         Width="1400"
-        Height="900">
+        Height="900"
+        Background="{DynamicResource AppWindowBackgroundBrush}"
+        Foreground="{DynamicResource AppTextBrush}">
 
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Undo" Executed="Undo_Executed" CanExecute="Undo_CanExecute"/>
         <CommandBinding Command="ApplicationCommands.Redo" Executed="Redo_Executed" CanExecute="Redo_CanExecute"/>
+        <CommandBinding Command="ApplicationCommands.Save" Executed="Save_Executed" CanExecute="Save_CanExecute"/>
     </Window.CommandBindings>
 
     <Window.InputBindings>
         <KeyBinding Command="ApplicationCommands.Undo" Modifiers="Control" Key="Z"/>
         <KeyBinding Command="ApplicationCommands.Redo" Modifiers="Control" Key="Y"/>
+        <KeyBinding Command="ApplicationCommands.Save" Modifiers="Control" Key="S"/>
     </Window.InputBindings>
 
-    <Grid>
+    <Grid Background="{DynamicResource AppWindowBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -30,6 +34,14 @@
         </Grid.ColumnDefinitions>
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Save .gca" Command="ApplicationCommands.Save" ToolTip="Ctrl+S" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="ApplicationCommands.Undo" ToolTip="Ctrl+Z" />
+                <Separator/>
+                <MenuItem Header="_Redo" Command="ApplicationCommands.Redo" ToolTip="Ctrl+Y" />
+            </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="Check for updates" Click="CheckUpdate_Click"/>
                 <Separator/>
@@ -39,7 +51,7 @@
 
 
         <!-- LEFT -->
-        <Grid Grid.Row="1" Grid.Column="0" Margin="10">
+        <Border Grid.Row="1" Grid.Column="0" Margin="10,10,0,10" Background="{DynamicResource AppPanelBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12"><Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="12"/>
@@ -55,7 +67,7 @@
 
                 <TextBlock x:Name="CurrentCarLabel"
                            Text="Car: -"
-                           Foreground="Gray"
+                           Foreground="{DynamicResource AppMutedTextBrush}"
                            Margin="0,0,0,10"/>
 
                 <StackPanel x:Name="MainControlsPanel">
@@ -69,9 +81,9 @@
                         Click="OpenGca_Click"
                         Margin="0,0,0,6"
                         IsEnabled="False"/>
-<TextBlock x:Name="MibLabel"
+                        <TextBlock x:Name="MibLabel"
                            Text="MIB: -"
-                           Foreground="Gray"
+                           Foreground="{DynamicResource AppMutedTextBrush}"
                            Margin="0,0,0,12"/>
                 </StackPanel>
             </StackPanel>
@@ -79,7 +91,7 @@
             <StackPanel x:Name="MainLeftPanels" Grid.Row="2">
 
                 <!-- ZONES -->
-                <GroupBox Header="Zones" Padding="8" Height="195" Margin="0,0,0,10">
+                <GroupBox Header="Zones" Padding="8" Height="215" Margin="0,0,0,10">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -111,7 +123,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Available" FontSize="11" Foreground="Gray" Margin="0,0,0,2"/>
+                                    <TextBlock Text="Available" FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,0,0,2"/>
                                     <ComboBox x:Name="AddZoneCombo"
                                               Height="28"
                                               VerticalContentAlignment="Center"
@@ -120,7 +132,7 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Custom" FontSize="11" Foreground="Gray" Margin="0,0,0,2"/>
+                                    <TextBlock Text="Custom" FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,0,0,2"/>
                                     <TextBox x:Name="CustomZoneIdBox"
                                              Width="70"
                                              Height="28"
@@ -151,7 +163,7 @@
 
                         <!-- Drive side selection -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal">
-                            <TextBlock Text="Side:" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Side:" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <RadioButton x:Name="SideLhd" Content="LHD" IsChecked="True" Margin="0,0,10,0" Checked="Side_Checked"/>
                             <RadioButton x:Name="SideRhd" Content="RHD" Checked="Side_Checked"/>
                         </StackPanel>
@@ -164,47 +176,61 @@
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="RGB" Width="42">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <CheckBox IsChecked="{Binding RgbEnabled}"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Center"
-                                                          Checked="AmbientRgbCheckbox_Changed"
-                                                          Unchecked="AmbientRgbCheckbox_Changed"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
+                                    <GridView>
+                                        <GridViewColumn Header="RGB" Width="40">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border HorizontalAlignment="Stretch"
+                                                            VerticalAlignment="Stretch"
+                                                            Padding="0">
+                                                        <CheckBox IsChecked="{Binding RgbEnabled}"
+                                                                  HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="-8,0,0,0"
+                                                                  Padding="0"
+                                                                  Checked="AmbientRgbCheckbox_Changed"
+                                                                  Unchecked="AmbientRgbCheckbox_Changed"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
 
-                                    <GridViewColumn Header="Slot" Width="46">
-                                        <GridViewColumn.DisplayMemberBinding>
-                                            <Binding Path="Index" StringFormat="{}{0:00}"/>
-                                        </GridViewColumn.DisplayMemberBinding>
-                                    </GridViewColumn>
+                                        <GridViewColumn Header="Slot" Width="40">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Index, StringFormat={}{0:00}}"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Margin="-10,0,0,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
 
-                                    <GridViewColumn Header="Status" Width="210">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView>
-                            </ListView.View>
+                                        <GridViewColumn Header="Status" Width="195">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Display}"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
                         </ListView>
 
                         <TextBlock x:Name="AmbientMoveHint"
                                    Grid.Row="4"
                                    Margin="0,2,0,0"
-                                   Foreground="Gray"
+                                   Foreground="{DynamicResource AppMutedTextBrush}"
                                    Text="Move mode: drag the selected image. ESC to cancel."
                                    Visibility="Collapsed"/>
 
                         <TextBlock x:Name="AmbientPlacementHint"
                                    Grid.Row="4"
                                    Margin="0,2,0,0"
-                                   Foreground="Gray"
+                                   Foreground="{DynamicResource AppMutedTextBrush}"
                                    Text="Placement mode: click in the viewer to place the selected ambient image (ESC to cancel)."
                                    TextWrapping="Wrap"
                                    Visibility="Collapsed"/>
@@ -217,19 +243,19 @@
                                 <Button Content="Import file..."
                                         Click="ImportAmbientFile_Click"
                                         Padding="10,4"
-                                        MinWidth="90"
+                                        MinWidth="80"
                                         Margin="0,0,6,0"/>
 
                                 <Button Content="Import folder..."
                                         Click="ImportAmbientFolder_Click"
                                         Padding="10,4"
-                                        MinWidth="90"
+                                        MinWidth="80"
                                         Margin="0,0,6,0"/>
 
                                 <Button Content="Delete"
                                         Click="ClearAmbient_Click"
                                         Padding="10,4"
-                                        MinWidth="80"/>
+                                        MinWidth="75"/>
                             </StackPanel>
 
                             <!-- Line 2: hide/show / place / cancel -->
@@ -238,7 +264,7 @@
                                         Content="Hide/Show"
                                         Click="ToggleAmbientVisibility_Click"
                                         Padding="10,4"
-                                        MinWidth="90"
+                                        MinWidth="80"
                                         Margin="0,0,6,0"/>
 
                                 <Button x:Name="PlaceAmbientButton"
@@ -262,7 +288,7 @@
                                     Content="Move"
                                     Click="MoveAmbient_Click"
                                     Padding="10,4"
-                                    MinWidth="137"
+                                    MinWidth="132"
                                     Margin="0,0,8,0"/>
 
                                 <Button x:Name="CancelMoveAmbientButton"
@@ -270,14 +296,14 @@
                                     IsEnabled="False"
                                     Click="CancelMoveAmbient_Click"
                                     Padding="10,4"
-                                    MinWidth="137"/>
+                                    MinWidth="132"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
                 </GroupBox>
 
             </StackPanel>
-        </Grid>
+        </Grid></Border>
 
         <!-- RIGHT -->
         <Grid x:Name="ViewerHost" Grid.Row="1" Grid.Column="1" Margin="12" SizeChanged="ViewerHost_SizeChanged">
@@ -291,16 +317,6 @@
                                 VerticalAlignment="Bottom"
                                 Width="980"
                                 Height="402"/>
-        </Grid>
-
-        <!-- Bottom bar -->
-        <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="10">
-            <Button x:Name="SaveGcaButton"
-                    Content="Save .gca"
-                    Click="SaveGca_Click"
-                    Padding="14,6"
-                    HorizontalAlignment="Left"
-                    IsEnabled="False"/>
         </Grid>
     </Grid>
 </Window>

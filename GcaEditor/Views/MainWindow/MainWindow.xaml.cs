@@ -1,11 +1,12 @@
 using GcaEditor.Data;
 using GcaEditor.Models;
 using GcaEditor.UndoRedo;
-using System.Windows;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
-using System.Diagnostics;
+using System.Windows;
+using System.Windows.Input;
 
 namespace GcaEditor;
 
@@ -160,7 +161,6 @@ public partial class MainWindow : Window
         {
             // Keep these coherent even if panels are enabled later
             if (OpenGcaButton != null) OpenGcaButton.IsEnabled = false;
-            if (SaveGcaButton != null) SaveGcaButton.IsEnabled = false;
         }
     }
 
