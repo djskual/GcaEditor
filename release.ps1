@@ -159,6 +159,7 @@ Remove-Item $ZipPath -Force
 
 Write-Step "Resetting RELEASE_NOTES.md"
 @"
+#Release Notes
 ## Added
 
 ## Improved
