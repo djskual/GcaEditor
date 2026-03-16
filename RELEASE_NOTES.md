@@ -1,3 +1,14 @@
 # Release Notes
+## Added
+- Added a maximum undo/redo history limit of 100 states to prevent unbounded memory usage during long editing sessions.
+
+## Improved
+- Improved update checking by parsing and comparing GitHub tags instead of relying on the first tag returned by the API.
+- Improved version comparison so prerelease tags such as `beta` are handled more reliably.
+
 ## Fixed
-- release script fix
+- Fixed a typo in the project asset declarations for `bright.png`.
+- Fixed a false XAML designer resource error by moving the viewer brightness icon mask loading out of XAML.
+
+## Cleanup
+- Cleaned up embedded asset handling to make resource loading more explicit and easier to maintain.

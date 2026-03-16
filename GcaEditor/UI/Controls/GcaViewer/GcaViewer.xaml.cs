@@ -27,6 +27,7 @@ public partial class GcaViewer : UserControl
     public GcaViewer()
     {
         InitializeComponent();
+        InitOpacityIcon();
 
         PlacementHitLayer.MouseLeftButtonDown += PlacementHitLayer_MouseLeftButtonDown;
 
@@ -57,13 +58,21 @@ public partial class GcaViewer : UserControl
         Loaded += (_, __) => AttachHwndHook();
 
         InitOpacityBar();
+    }
 
-        //LostMouseCapture += (_, __) => AmbientDrag_OnLostMouseCapture();
-        //PreviewKeyDown += (_, e) =>
-        //{
-        //    if (e.Key == Key.Escape)
-        //        AmbientDrag_Cancel();
-        //};
+    private void InitOpacityIcon()
+    {
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.UriSource = new Uri("pack://application:,,,/Assets/bright.png", UriKind.Absolute);
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.EndInit();
+        image.Freeze();
+
+        OpacityIcon.OpacityMask = new ImageBrush(image)
+        {
+            Stretch = Stretch.Uniform
+        };
     }
 
     public void SetZoneNames(System.Collections.Generic.IReadOnlyDictionary<ushort, string> names)

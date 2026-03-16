@@ -149,11 +149,7 @@
                             Background="White"
                             CornerRadius="2"
                             Margin="0,0,10,0"
-                            VerticalAlignment="Center">
-                        <Border.OpacityMask>
-                            <ImageBrush ImageSource="/Assets/bright.png" Stretch="Uniform"/>
-                        </Border.OpacityMask>
-                    </Border>
+                            VerticalAlignment="Center"/>
 
                     <!-- All Zones toggle -->
                     <ToggleButton x:Name="AllZonesButton"
@@ -209,7 +205,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Colors icon -->
-                    <Image Source="/Assets/colors.png"
+                    <Image Source="pack://application:,,,/Assets/colors.png"
                            Width="18"
                            Height="18"
                            Margin="0,0,10,0"

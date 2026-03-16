@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <None Remove="Assets\app.ico" />
-    <None Remove="Assets\brigth.png" />
+    <None Remove="Assets\bright.png" />
     <None Remove="Assets\colors.png" />
     <None Remove="Assets\sun.png" />
     <None Remove="Assets\sun_selected.png" />

@@ -28,7 +28,7 @@ public partial class MainWindow : Window
         Title = $"GcaEditor {GetBuildTag()}";
 
         _zoneCatalog = ZoneCatalog.LoadOrDefault();
-        _history = new UndoRedoStack<EditorState>(s => s.DeepClone());
+        _history = new UndoRedoStack<EditorState>(s => s.DeepClone(), maxUndo: 100);
 
         WireViewerEvents();
         WireWindowEvents();
@@ -72,13 +72,51 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var latestTag = doc.RootElement[0]
-                .GetProperty("name")
-                .GetString();
+            string? latestTag = null;
+            TagVersion? latestVersion = null;
 
-            var currentVersion = GetBuildTag();
+            foreach (var element in doc.RootElement.EnumerateArray())
+            {
+                if (!element.TryGetProperty("name", out var nameProp))
+                    continue;
 
-            if (!string.Equals(latestTag?.Trim(), currentVersion?.Trim(), StringComparison.OrdinalIgnoreCase))
+                var tagName = nameProp.GetString();
+                if (string.IsNullOrWhiteSpace(tagName))
+                    continue;
+
+                if (!TryParseTagVersion(tagName, out var parsed))
+                    continue;
+
+                if (latestVersion == null || parsed.CompareTo(latestVersion.Value) > 0)
+                {
+                    latestVersion = parsed;
+                    latestTag = tagName.Trim();
+                }
+            }
+
+            if (latestVersion == null || string.IsNullOrWhiteSpace(latestTag))
+            {
+                MessageBox.Show(
+                    "No valid version tag found on GitHub.",
+                    "Update check",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var currentTag = GetBuildTag();
+
+            if (!TryParseTagVersion(currentTag, out var currentVersion))
+            {
+                MessageBox.Show(
+                    $"Current version tag is invalid: {currentTag}",
+                    "Update check",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            if (latestVersion.Value.CompareTo(currentVersion) > 0)
             {
                 var result = MessageBox.Show(
                     $"New version available: {latestTag}\n\nOpen download page?",
@@ -112,6 +150,96 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
+    }
+
+
+    private readonly struct TagVersion : IComparable<TagVersion>
+    {
+        public int Major { get; }
+        public int Minor { get; }
+        public int Patch { get; }
+        public string? PreLabel { get; }
+        public int PreNumber { get; }
+
+        public TagVersion(int major, int minor, int patch, string? preLabel, int preNumber)
+        {
+            Major = major;
+            Minor = minor;
+            Patch = patch;
+            PreLabel = preLabel;
+            PreNumber = preNumber;
+        }
+
+        public int CompareTo(TagVersion other)
+        {
+            var c = Major.CompareTo(other.Major);
+            if (c != 0) return c;
+
+            c = Minor.CompareTo(other.Minor);
+            if (c != 0) return c;
+
+            c = Patch.CompareTo(other.Patch);
+            if (c != 0) return c;
+
+            var thisIsStable = string.IsNullOrWhiteSpace(PreLabel);
+            var otherIsStable = string.IsNullOrWhiteSpace(other.PreLabel);
+
+            if (thisIsStable && otherIsStable) return 0;
+            if (thisIsStable) return 1;
+            if (otherIsStable) return -1;
+
+            c = string.Compare(PreLabel, other.PreLabel, StringComparison.OrdinalIgnoreCase);
+            if (c != 0) return c;
+
+            return PreNumber.CompareTo(other.PreNumber);
+        }
+    }
+
+    private static bool TryParseTagVersion(string? tag, out TagVersion version)
+    {
+        version = default;
+
+        if (string.IsNullOrWhiteSpace(tag))
+            return false;
+
+        var s = tag.Trim();
+
+        if (s.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+            s = s[1..];
+
+        string corePart = s;
+        string? prePart = null;
+
+        var dashIndex = s.IndexOf('-');
+        if (dashIndex >= 0)
+        {
+            corePart = s[..dashIndex];
+            prePart = s[(dashIndex + 1)..];
+        }
+
+        var core = corePart.Split('.');
+        if (core.Length != 3)
+            return false;
+
+        if (!int.TryParse(core[0], out var major)) return false;
+        if (!int.TryParse(core[1], out var minor)) return false;
+        if (!int.TryParse(core[2], out var patch)) return false;
+
+        string? preLabel = null;
+        int preNumber = 0;
+
+        if (!string.IsNullOrWhiteSpace(prePart))
+        {
+            var pre = prePart.Split('.', 2, StringSplitOptions.RemoveEmptyEntries);
+
+            preLabel = pre[0].Trim();
+
+            if (pre.Length > 1 && !int.TryParse(pre[1], out preNumber))
+                preNumber = 0;
+        }
+
+        version = new TagVersion(major, minor, patch, preLabel, preNumber);
+        return true;
     }
 
     private void About_Click(object sender, RoutedEventArgs e)
