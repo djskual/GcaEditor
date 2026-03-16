@@ -111,17 +111,44 @@ public partial class MainWindow
             return;
         }
 
-        _gcaPath = path;
-        _doc = GcaCodec.Load(_gcaPath);
+        try
+        {
+            _gcaPath = path;
+            _doc = GcaCodec.Load(_gcaPath);
 
-        _history.Clear();
-        Viewer.LoadDocument(_doc);
+            _history.Clear();
+            Viewer.LoadDocument(_doc);
 
-        CaptureInitialAmbientIds();
+            CaptureInitialAmbientIds();
 
-        RefreshZonesUi();
-        RefreshAmbientUi();
-        UpdateAmbientAvailability();
+            RefreshZonesUi();
+            RefreshAmbientUi();
+            UpdateAmbientAvailability();
+        }
+        catch (InvalidDataException ex)
+        {
+            MessageBox.Show(
+                $"Invalid or unsupported GCA file.\n\n{ex.Message}",
+                "GCA load error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (EndOfStreamException ex)
+        {
+            MessageBox.Show(
+                $"Incomplete or truncated GCA file.\n\n{ex.Message}",
+                "GCA load error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Unable to load GCA file.\n\n{ex.Message}",
+                "GCA load error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private void LoadAmbientFeaturesFromCarFolder(string carFolder)
