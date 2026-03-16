@@ -1,5 +1,6 @@
 using GcaEditor.Models;
 using GcaEditor.UI.Interop;
+using GcaEditor.UI.Dialogs;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -69,7 +70,7 @@ public partial class MainWindow
 
         if (!TryParseFeatureName(System.IO.Path.GetFileName(ofd.FileName), out var side, out var index))
         {
-            MessageBox.Show("Nom invalide. Attendu: Feature_LHD_0.png .. Feature_LHD_22.png (ou RHD).", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+            AppMessageBox.Show("Nom invalide. Attendu: Feature_LHD_0.png .. Feature_LHD_22.png (ou RHD).", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -117,10 +118,10 @@ public partial class MainWindow
         }
 
         if (imported == 0)
-            MessageBox.Show($"Aucune image trouvee pour {_side}. Attendu: Feature_{_side}_0.png .. Feature_{_side}_22.png");
+            AppMessageBox.Show($"Aucune image trouvee pour {_side}. Attendu: Feature_{_side}_0.png .. Feature_{_side}_22.png");
 
         RefreshAmbientUi();
-        MessageBox.Show($"Imported {imported} image(s) for {_side}.");
+        AppMessageBox.Show($"Imported {imported} image(s) for {_side}.");
     }
 
     private void ClearAmbient_Click(object sender, RoutedEventArgs e)
@@ -462,7 +463,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            MessageBox.Show("Selectionne un slot (0..22) dans la liste.");
+            AppMessageBox.Show("Selectionne un slot (0..22) dans la liste.");
             return;
         }
 
@@ -473,14 +474,14 @@ public partial class MainWindow
 
         if (idxSlot < 0 || idxSlot > 22 || slots[idxSlot] == null)
         {
-            MessageBox.Show("Aucune image chargee dans ce slot.");
+            AppMessageBox.Show("Aucune image chargee dans ce slot.");
             return;
         }
 
         bool positioned = Viewer.IsAmbientIdPositionedInDoc(idxSlot);
         if (!positioned)
         {
-            MessageBox.Show("Image pending: place-la d'abord avant Hide/Show.");
+            AppMessageBox.Show("Image pending: place-la d'abord avant Hide/Show.");
             return;
         }
 
@@ -498,7 +499,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            MessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
+            AppMessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
             return;
         }
 
@@ -510,14 +511,14 @@ public partial class MainWindow
 
         if (slots[idxSlot] == null)
         {
-            MessageBox.Show("Ce slot est vide. Importe d'abord une image.");
+            AppMessageBox.Show("Ce slot est vide. Importe d'abord une image.");
             return;
         }
 
         // Place only if pending
         if (Viewer.IsAmbientIdPositionedInDoc(idxSlot))
         {
-            MessageBox.Show("Cette image est deja positionnee. Place est dispo uniquement en pending.");
+            AppMessageBox.Show("Cette image est deja positionnee. Place est dispo uniquement en pending.");
             return;
         }
 
@@ -536,7 +537,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            MessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
+            AppMessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
             return;
         }
 
@@ -548,7 +549,7 @@ public partial class MainWindow
 
         if (!loaded || !positioned)
         {
-            MessageBox.Show("Move est disponible uniquement si l image est loaded + positioned.");
+            AppMessageBox.Show("Move est disponible uniquement si l image est loaded + positioned.");
             return;
         }
 

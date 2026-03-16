@@ -21,7 +21,7 @@ public partial class MainWindow
         }
         catch (System.Exception ex)
         {
-            MessageBox.Show("Failed to load car.json: " + ex.Message);
+            AppMessageBox.Show("Failed to load car.json: " + ex.Message);
             return;
         }
 
@@ -54,12 +54,12 @@ public partial class MainWindow
 
         if (!File.Exists(bgPath))
         {
-            MessageBox.Show("Background not found: " + bgPath);
+            AppMessageBox.Show("Background not found: " + bgPath);
             return;
         }
         if (!File.Exists(gcaPath))
         {
-            MessageBox.Show("GCA not found: " + gcaPath);
+            AppMessageBox.Show("GCA not found: " + gcaPath);
             return;
         }
 
@@ -108,7 +108,7 @@ public partial class MainWindow
     {
         if (!Viewer.HasBackground)
         {
-            MessageBox.Show("Import a background first.");
+            AppMessageBox.Show("Import a background first.");
             return;
         }
 
@@ -220,7 +220,7 @@ public partial class MainWindow
     {
         if (!Viewer.HasBackground)
         {
-            MessageBox.Show("Tu dois d'abord importer un background (PNG 1280x556 or 800x417) avant de charger un .gca.");
+            AppMessageBox.Show("Tu dois d'abord importer un background (PNG 1280x556 or 800x417) avant de charger un .gca.");
             return;
         }
 
@@ -249,7 +249,7 @@ public partial class MainWindow
         if (sfd.ShowDialog() != true) return;
 
         GcaCodec.Save(sfd.FileName, _doc);
-        MessageBox.Show("GCA sauvegarde.");
+        AppMessageBox.Show("GCA sauvegarde.");
     }
 
     private void Save_Executed(object sender, ExecutedRoutedEventArgs e)

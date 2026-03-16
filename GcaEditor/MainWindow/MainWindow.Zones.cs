@@ -1,4 +1,5 @@
 using GcaEditor.Models;
+using GcaEditor.UI.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -85,7 +86,7 @@ public partial class MainWindow
     {
         if (_doc == null)
         {
-            MessageBox.Show("Charge un GCA d'abord.");
+            AppMessageBox.Show("Charge un GCA d'abord.");
             return;
         }
 
@@ -97,7 +98,7 @@ public partial class MainWindow
         {
             if (!ushort.TryParse(customText, out var customId))
             {
-                MessageBox.Show("ID custom invalide. Entrez un nombre entre 0 et 65535.");
+                AppMessageBox.Show("ID custom invalide. Entrez un nombre entre 0 et 65535.");
                 return;
             }
             zoneId = customId;
@@ -111,14 +112,14 @@ public partial class MainWindow
 
         if (zoneId == null)
         {
-            MessageBox.Show("Choisis une zone dans la liste ou saisis un ID custom.");
+            AppMessageBox.Show("Choisis une zone dans la liste ou saisis un ID custom.");
             return;
         }
 
         // Security: forbid duplicate ID in the GCA
         if (_doc.Zones.Any(z => z.Id == zoneId.Value))
         {
-            MessageBox.Show($"La zone {zoneId.Value} existe deja dans ce GCA. Supprime-la avant, ou choisis un autre ID.");
+            AppMessageBox.Show($"La zone {zoneId.Value} existe deja dans ce GCA. Supprime-la avant, ou choisis un autre ID.");
             return;
         }
 
@@ -142,14 +143,14 @@ public partial class MainWindow
     {
         if (_doc == null)
         {
-            MessageBox.Show("Charge un GCA d'abord.");
+            AppMessageBox.Show("Charge un GCA d'abord.");
             return;
         }
 
         var sel = Viewer.SelectedZoneId;
         if (sel == null)
         {
-            MessageBox.Show("Selectionne une zone a supprimer.");
+            AppMessageBox.Show("Selectionne une zone a supprimer.");
             return;
         }
 
