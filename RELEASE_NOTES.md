@@ -5,6 +5,7 @@
 ## Improved
 - Improved update checking by parsing and comparing GitHub tags instead of relying on the first tag returned by the API.
 - Improved version comparison so prerelease tags such as `beta` are handled more reliably.
+- Improved viewer zoom behavior by keeping the current viewport centered when zooming in or out.
 
 ## Fixed
 - Fixed a typo in the project asset declarations for `bright.png`.
