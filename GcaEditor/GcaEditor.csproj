@@ -48,6 +48,11 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UI\Dialogs\" />
+    <Folder Include="Views\Dialogs\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <GitTag>unknown</GitTag>
     <GeneratedGitTagFile>$(IntermediateOutputPath)git-tag.txt</GeneratedGitTagFile>

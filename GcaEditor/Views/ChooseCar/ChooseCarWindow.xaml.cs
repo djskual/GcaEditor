@@ -1,4 +1,5 @@
 using GcaEditor.Data;
+using GcaEditor.UI.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -47,7 +48,7 @@ public partial class ChooseCarWindow : Window
         SelectedCar = CarCombo.SelectedItem as CarEntry;
         if (SelectedCar == null)
         {
-            MessageBox.Show("Select a car.");
+            AppMessageBox.Show("Select a car.");
             return;
         }
 

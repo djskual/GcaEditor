@@ -1,6 +1,7 @@
 using GcaEditor.Data;
 using GcaEditor.Models;
 using GcaEditor.UndoRedo;
+using GcaEditor.UI.Dialogs;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -64,7 +65,7 @@ public partial class MainWindow : Window
 
             if (doc.RootElement.ValueKind != JsonValueKind.Array || doc.RootElement.GetArrayLength() == 0)
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "No tag found on GitHub.",
                     "Update check",
                     MessageBoxButton.OK,
@@ -96,7 +97,7 @@ public partial class MainWindow : Window
 
             if (latestVersion == null || string.IsNullOrWhiteSpace(latestTag))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "No valid version tag found on GitHub.",
                     "Update check",
                     MessageBoxButton.OK,
@@ -108,7 +109,7 @@ public partial class MainWindow : Window
 
             if (!TryParseTagVersion(currentTag, out var currentVersion))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Current version tag is invalid: {currentTag}",
                     "Update check",
                     MessageBoxButton.OK,
@@ -118,7 +119,7 @@ public partial class MainWindow : Window
 
             if (latestVersion.Value.CompareTo(currentVersion) > 0)
             {
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     $"New version available: {latestTag}\n\nOpen download page?",
                     "Update available",
                     MessageBoxButton.YesNo,
@@ -135,7 +136,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "You already have the latest version.",
                     "No update",
                     MessageBoxButton.OK,
@@ -144,7 +145,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Unable to check updates.\n\n{ex.Message}",
                 "Update error",
                 MessageBoxButton.OK,

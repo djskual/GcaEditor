@@ -1,6 +1,7 @@
 using GcaEditor.Data;
 using GcaEditor.IO;
 using GcaEditor.Views;
+using GcaEditor.UI.Dialogs;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -127,7 +128,7 @@ public partial class MainWindow
         }
         catch (InvalidDataException ex)
         {
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Invalid or unsupported GCA file.\n\n{ex.Message}",
                 "GCA load error",
                 MessageBoxButton.OK,
@@ -135,7 +136,7 @@ public partial class MainWindow
         }
         catch (EndOfStreamException ex)
         {
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Incomplete or truncated GCA file.\n\n{ex.Message}",
                 "GCA load error",
                 MessageBoxButton.OK,
@@ -143,7 +144,7 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Unable to load GCA file.\n\n{ex.Message}",
                 "GCA load error",
                 MessageBoxButton.OK,
