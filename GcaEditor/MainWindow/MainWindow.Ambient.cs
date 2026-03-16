@@ -167,12 +167,9 @@ public partial class MainWindow
                 var img = _doc.Images.FirstOrDefault(x => x.Id == (ushort)idx);
                 if (img != null)
                     _doc.Images.Remove(img);
-
-                Viewer.LoadDocument(_doc);
             }
         }
 
-        ApplyAmbientSideToViewer();
         RefreshAmbientUi();
     }
 
@@ -330,8 +327,8 @@ public partial class MainWindow
         var vis = (_side == DriveSide.LHD) ? _ambientVisibleLhd : _ambientVisibleRhd;
         vis[idxSlot] = true;
 
-        Viewer.LoadDocument(_doc);
-        ApplyAmbientSideToViewer();
+        Viewer.RefreshAmbientIdFromDoc(idxSlot);
+        Viewer.SetAmbientSlotVisible(idxSlot, true);
         RefreshAmbientUi();
 
         ExitAmbientPlacementMode();

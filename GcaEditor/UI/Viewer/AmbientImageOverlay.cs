@@ -178,6 +178,50 @@ public sealed class AmbientImageOverlay
         }
     }
 
+    public void RenderSlotAt(int index, int x, int y)
+    {
+        var bmp = GetSlotBitmap(index);
+        if (bmp == null)
+        {
+            RemoveDisplayed(index);
+            return;
+        }
+
+        var displayBmp = GetTintedForIndex(index);
+        if (displayBmp == null)
+        {
+            RemoveDisplayed(index);
+            return;
+        }
+
+        if (!_images.TryGetValue(index, out var img))
+        {
+            img = new Image
+            {
+                Source = displayBmp,
+                Stretch = Stretch.None,
+                SnapsToDevicePixels = true,
+                IsHitTestVisible = false
+            };
+            RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.NearestNeighbor);
+            _images[index] = img;
+            _ctx.AmbientLayer.Children.Add(img);
+        }
+        else
+        {
+            img.Source = displayBmp;
+        }
+
+        Canvas.SetLeft(img, x);
+        Canvas.SetTop(img, y);
+    }
+
+    public void RemoveDisplayed(int index)
+    {
+        if (_images.Remove(index, out var img))
+            _ctx.AmbientLayer.Children.Remove(img);
+    }
+    
     private BitmapSource? GetTintedForIndex(int index)
     {
         var baseBmp = GetSlotBitmap(index);

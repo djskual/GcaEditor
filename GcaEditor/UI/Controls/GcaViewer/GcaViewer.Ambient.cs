@@ -12,13 +12,13 @@ public partial class GcaViewer
     public void SetAmbientSlot(int index, BitmapSource bitmap)
     {
         _ambient.SetSlot(index, bitmap);
-        RenderAmbientFromDoc();
+        RefreshAmbientIdFromDoc(index);
     }
 
     public void ClearAmbientSlot(int index)
     {
         _ambient.ClearSlot(index);
-        RenderAmbientFromDoc();
+        _ambient.RemoveDisplayed(index);
     }
 
     public void ClearAllAmbient() => _ambient.ClearAll();
@@ -28,7 +28,72 @@ public partial class GcaViewer
     public bool IsAmbientIdPositionedInDoc(int index)
         => _doc?.Images.Any(i => i.Id == index) == true;
 
-    public void SetAmbientPlacementMode(int index)
+    public void RefreshAmbientIdFromDoc(int index)
+    {
+        if (_doc == null)
+        {
+            _ambient.RemoveDisplayed(index);
+            return;
+        }
+
+        var entry = _doc.Images.FirstOrDefault(i => i.Id == (ushort)index);
+        if (entry == null)
+        {
+            _ambient.RemoveDisplayed(index);
+            return;
+        }
+
+        _ambient.RenderSlotAt(index, entry.X, entry.Y);
+    }
+
+    public Point ClampAmbientTopLeft(int index, double x, double y)
+    {
+        if (_ctx.Background == null) return new Point(x, y);
+
+        var bmp = _ambient.GetSlotBitmap(index);
+        if (bmp == null) return new Point(x, y);
+
+        double bgW = _ctx.Background.PixelWidth;
+        double bgH = _ctx.Background.PixelHeight;
+
+        double maxX = bgW - bmp.PixelWidth;
+        double maxY = bgH - bmp.PixelHeight;
+
+        if (maxX < 0) maxX = 0;
+        if (maxY < 0) maxY = 0;
+
+        double cx = x;
+        double cy = y;
+
+        if (cx < 0) cx = 0;
+        if (cy < 0) cy = 0;
+        if (cx > maxX) cx = maxX;
+        if (cy > maxY) cy = maxY;
+
+        return new Point(cx, cy);
+    }
+
+    public bool TrySetAmbientDisplayedPosition(int index, double x, double y)
+    {
+        if (_ambient.TryGetDisplayedImage(index, out var imgEl))
+        {
+            Canvas.SetLeft(imgEl, x);
+            Canvas.SetTop(imgEl, y);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void SetAmbientSlotVisible(int index, bool visible)
+    {
+        if (visible && !_ambient.IsDisplayed(index))
+            RefreshAmbientIdFromDoc(index);
+
+        _ambient.SetDisplayedVisible(index, visible);
+    }
+    
+   public void SetAmbientPlacementMode(int index)
     {
         _ambientPlacementIndex = index;
         Cursor = Cursors.Cross;
@@ -83,52 +148,4 @@ public partial class GcaViewer
         var positions = _doc.Images.Select(i => ((int)i.Id, (int)i.X, (int)i.Y));
         _ambient.RenderAtPositions(positions);
     }
-
-    public Point ClampAmbientTopLeft(int index, double x, double y)
-    {
-        if (_ctx.Background == null) return new Point(x, y);
-
-        var bmp = _ambient.GetSlotBitmap(index);
-        if (bmp == null) return new Point(x, y);
-
-        double bgW = _ctx.Background.PixelWidth;
-        double bgH = _ctx.Background.PixelHeight;
-
-        double maxX = bgW - bmp.PixelWidth;
-        double maxY = bgH - bmp.PixelHeight;
-
-        if (maxX < 0) maxX = 0;
-        if (maxY < 0) maxY = 0;
-
-        double cx = x;
-        double cy = y;
-
-        if (cx < 0) cx = 0;
-        if (cy < 0) cy = 0;
-        if (cx > maxX) cx = maxX;
-        if (cy > maxY) cy = maxY;
-
-        return new Point(cx, cy);
-    }
-
-    public bool TrySetAmbientDisplayedPosition(int index, double x, double y)
-    {
-        if (_ambient.TryGetDisplayedImage(index, out var imgEl))
-        {
-            Canvas.SetLeft(imgEl, x);
-            Canvas.SetTop(imgEl, y);
-            return true;
-        }
-
-        return false;
-    }
-
-    public void SetAmbientSlotVisible(int index, bool visible)
-    {
-        if (visible && !_ambient.IsDisplayed(index))
-            RenderAmbientFromDoc();
-
-        _ambient.SetDisplayedVisible(index, visible);
-    }
-
 }

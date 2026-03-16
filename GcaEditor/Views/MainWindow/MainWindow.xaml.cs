@@ -405,8 +405,7 @@ public partial class MainWindow : Window
             img.X = finalX;
             img.Y = finalY;
 
-            Viewer.LoadDocument(_doc);
-            ApplyAmbientSideToViewer();
+            Viewer.RefreshAmbientIdFromDoc(e.Id);
             RefreshAmbientUi();
 
             ExitAmbientMoveMode();
