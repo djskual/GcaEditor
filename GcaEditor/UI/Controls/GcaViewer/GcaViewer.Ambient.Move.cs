@@ -27,14 +27,19 @@ public partial class GcaViewer
     public event EventHandler<AmbientMoveCommittedEventArgs>? AmbientMoveCommitted;
 
     private int? _ambientMoveIndex;
+    private bool _ambientMovePending;
     private bool _ambientMoveDragging;
     private Point _ambientMoveStartMouseImg;
+    private Point _ambientMoveStartMouseViewport;
     private ushort _ambientMoveStartX;
     private ushort _ambientMoveStartY;
+
+    private const double AmbientMoveStartThresholdPx = 4.0;
 
     public void SetAmbientMoveMode(int index)
     {
         _ambientMoveIndex = index;
+        _ambientMovePending = false;
         _ambientMoveDragging = false;
         Cursor = Cursors.SizeAll;
 
@@ -45,6 +50,7 @@ public partial class GcaViewer
     public void ClearAmbientMoveMode()
     {
         _ambientMoveIndex = null;
+        _ambientMovePending = false;
         _ambientMoveDragging = false;
         Cursor = null;
 
@@ -59,18 +65,18 @@ public partial class GcaViewer
 
         int idx = _ambientMoveIndex.Value;
 
-        // Only allow move if we have a doc entry and a loaded bitmap
         if (!_ambient.HasSlot(idx)) return;
 
         var entry = _doc.Images.FirstOrDefault(x => x.Id == (ushort)idx);
         if (entry == null) return;
 
-        // Mouse start in image coords
-        _ambientMoveStartMouseImg = ViewportToImage(e.GetPosition(EditorScroll));
+        _ambientMoveStartMouseViewport = e.GetPosition(EditorScroll);
+        _ambientMoveStartMouseImg = ViewportToImage(_ambientMoveStartMouseViewport);
         _ambientMoveStartX = entry.X;
         _ambientMoveStartY = entry.Y;
 
-        _ambientMoveDragging = true;
+        _ambientMovePending = true;
+        _ambientMoveDragging = false;
 
         MoveHitLayer.CaptureMouse();
         e.Handled = true;
@@ -79,11 +85,27 @@ public partial class GcaViewer
     private void MoveHitLayer_MouseMove(object sender, MouseEventArgs e)
     {
         if (_ambientMoveIndex == null) return;
-        if (!_ambientMoveDragging) return;
+        if (!_ambientMovePending && !_ambientMoveDragging) return;
 
         int idx = _ambientMoveIndex.Value;
+        var currentViewport = e.GetPosition(EditorScroll);
 
-        var nowImg = ViewportToImage(e.GetPosition(EditorScroll));
+        if (!_ambientMoveDragging)
+        {
+            double deltaViewportX = currentViewport.X - _ambientMoveStartMouseViewport.X;
+            double deltaViewportY = currentViewport.Y - _ambientMoveStartMouseViewport.Y;
+
+            if ((deltaViewportX * deltaViewportX) + (deltaViewportY * deltaViewportY) <
+                AmbientMoveStartThresholdPx * AmbientMoveStartThresholdPx)
+            {
+                return;
+            }
+
+            _ambientMoveDragging = true;
+            _ambientMovePending = false;
+        }
+
+        var nowImg = ViewportToImage(currentViewport);
         double dx = nowImg.X - _ambientMoveStartMouseImg.X;
         double dy = nowImg.Y - _ambientMoveStartMouseImg.Y;
 
@@ -106,7 +128,14 @@ public partial class GcaViewer
     private void MoveHitLayer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         if (_ambientMoveIndex == null) return;
-        if (!_ambientMoveDragging) return;
+        if (!_ambientMovePending && !_ambientMoveDragging) return;
+
+        if (_ambientMovePending)
+        {
+            CancelMove();
+            e.Handled = true;
+            return;
+        }
 
         FinishMove(e.GetPosition(EditorScroll));
         e.Handled = true;
@@ -115,7 +144,7 @@ public partial class GcaViewer
     private void MoveHitLayer_LostMouseCapture(object sender, MouseEventArgs e)
     {
         if (_ambientMoveIndex == null) return;
-        if (!_ambientMoveDragging) return;
+        if (!_ambientMovePending && !_ambientMoveDragging) return;
 
         CancelMove();
     }
@@ -130,6 +159,7 @@ public partial class GcaViewer
         if (MoveHitLayer.IsMouseCaptured)
             MoveHitLayer.ReleaseMouseCapture();
 
+        _ambientMovePending = false;
         _ambientMoveDragging = false;
 
         var nowImg = ViewportToImage(viewportPos);
@@ -146,7 +176,9 @@ public partial class GcaViewer
         ushort newX = (ushort)Math.Round(fx);
         ushort newY = (ushort)Math.Round(fy);
 
-        // Re-render from doc will happen after commit. Emit event.
+        if (newX == _ambientMoveStartX && newY == _ambientMoveStartY)
+            return;
+
         AmbientMoveCommitted?.Invoke(this,
             new AmbientMoveCommittedEventArgs(idx, _ambientMoveStartX, _ambientMoveStartY, newX, newY));
     }
@@ -160,9 +192,9 @@ public partial class GcaViewer
         if (MoveHitLayer.IsMouseCaptured)
             MoveHitLayer.ReleaseMouseCapture();
 
+        _ambientMovePending = false;
         _ambientMoveDragging = false;
 
-        // Restore visual to doc position
         if (_doc != null)
         {
             var entry = _doc.Images.FirstOrDefault(x => x.Id == (ushort)idx);

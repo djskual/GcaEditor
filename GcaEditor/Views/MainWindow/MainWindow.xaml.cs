@@ -386,16 +386,24 @@ public partial class MainWindow : Window
         {
             if (_doc == null) return;
 
-            // Snapshot before mutating doc
-            _history.PushUndoSnapshot(CaptureState());
-
             var img = _doc.Images.FirstOrDefault(x => x.Id == (ushort)e.Id);
             if (img == null) return;
 
             var clamped = Viewer.ClampAmbientTopLeft(e.Id, e.NewX, e.NewY);
 
-            img.X = (ushort)Math.Round(clamped.X);
-            img.Y = (ushort)Math.Round(clamped.Y);
+            ushort finalX = (ushort)Math.Round(clamped.X);
+            ushort finalY = (ushort)Math.Round(clamped.Y);
+
+            if (img.X == finalX && img.Y == finalY)
+            {
+                ExitAmbientMoveMode();
+                return;
+            }
+
+            _history.PushUndoSnapshot(CaptureState());
+
+            img.X = finalX;
+            img.Y = finalY;
 
             Viewer.LoadDocument(_doc);
             ApplyAmbientSideToViewer();
