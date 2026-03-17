@@ -6,7 +6,9 @@
         Icon="/Assets/app.ico"
         Title="GCA Editor"
         Width="1400"
-        Height="800"
+        MinWidth="1400"
+        Height="777"
+        MinHeight="777"
         Background="{DynamicResource AppWindowBackgroundBrush}"
         Foreground="{DynamicResource AppTextBrush}">
 
@@ -85,11 +87,20 @@
 
 
         <!-- LEFT -->
-        <Border Grid.Row="1" Grid.Column="0" Margin="10,10,0,10" Background="{DynamicResource AppPanelBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12"><Grid>
+        <Border Grid.Row="1"
+                Grid.Column="0"
+                Margin="10,10,0,10"
+                Background="{DynamicResource AppPanelBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="12"
+                VerticalAlignment="Top">
+            <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="12"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0">
@@ -131,7 +142,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="60"/>
                                     <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="10"/>
@@ -147,16 +158,6 @@
                                               IsEditable="False"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Custom" FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,0,0,2"/>
-                                    <TextBox x:Name="CustomZoneIdBox"
-                                             Width="70"
-                                             Height="28"
-                                             VerticalContentAlignment="Center"
-                                             Padding="6,2"
-                                             ToolTip="Custom Zone ID (0..65535)"/>
-                                </StackPanel>
-
                                 <Button Grid.Column="4" Content="Add" Height="28" Padding="10,4" VerticalAlignment="Bottom" Click="AddZone_Click"/>
                                 <Button Grid.Column="6" Content="Delete" Height="28" Padding="10,4" VerticalAlignment="Bottom" Click="DeleteZone_Click"/>
                             </Grid>
@@ -165,26 +166,28 @@
                 </GroupBox>
 
                 <!-- AMBIENT IMAGES -->
-                <GroupBox x:Name="AmbientGroup" Header="Ambient images" Padding="8" Height="360">
+                <GroupBox x:Name="AmbientGroup" Header="Ambient images" Padding="8" Height="375">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="8"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="35"/>
                             <RowDefinition Height="10"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Drive side selection -->
+                        <!-- Fixed drive side -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal">
-                            <TextBlock Text="Side:" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <RadioButton x:Name="SideLhd" Content="LHD" IsChecked="True" Margin="0,0,10,0" Checked="Side_Checked"/>
-                            <RadioButton x:Name="SideRhd" Content="RHD" Checked="Side_Checked"/>
+                            <TextBlock Text="Drive Side:" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="CurrentSideLabel"
+                                       Text="-"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource AppTextBrush}"/>
                         </StackPanel>
 
-                        <!-- List of slots (with RGB selection checkbox) -->
+                            <!-- List of slots (with RGB selection checkbox) -->
                         <ListView x:Name="AmbientList"
                                   Grid.Row="2"
                                   Height="150"
@@ -330,9 +333,9 @@
             <controls:GcaViewer x:Name="Viewer"
                                 Grid.Row="0"
                                 HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Width="980"
-                                Height="402"/>
+                                VerticalAlignment="Top"
+                                Width="1023"
+                                Height="574"/>
         </Grid>
     </Grid>
 </Window>

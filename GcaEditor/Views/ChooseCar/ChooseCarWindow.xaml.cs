@@ -39,6 +39,8 @@ public partial class ChooseCarWindow : Window
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
         IsCustom = CustomCheck.IsChecked == true;
+        SelectedSide = (RhdRadio.IsChecked == true) ? "RHD" : "LHD";
+
         if (IsCustom)
         {
             DialogResult = true;
@@ -53,7 +55,6 @@ public partial class ChooseCarWindow : Window
         }
 
         SelectedMib = (MibCombo.SelectedItem as string) ?? "MIB25";
-        SelectedSide = (RhdRadio.IsChecked == true) ? "RHD" : "LHD";
 
         DialogResult = true;
     }

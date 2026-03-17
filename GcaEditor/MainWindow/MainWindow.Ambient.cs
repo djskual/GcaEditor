@@ -38,26 +38,12 @@ public partial class MainWindow
 
     private void InitAmbientUiOnLoaded()
     {
-        _side = (SideRhd?.IsChecked == true) ? DriveSide.RHD : DriveSide.LHD;
         ApplyAmbientSideToViewer();
         RefreshAmbientUi();
+        UpdateCurrentSideLabel();
     }
 
     // Ambient images UI
-
-    private void Side_Checked(object sender, RoutedEventArgs e)
-    {
-        if (!_uiReady || Viewer == null)
-            return;
-
-        if (sender is RadioButton rb)
-            _side = (rb.Name == "SideRhd") ? DriveSide.RHD : DriveSide.LHD;
-        else
-            _side = (SideRhd?.IsChecked == true) ? DriveSide.RHD : DriveSide.LHD;
-
-        ApplyAmbientSideToViewer();
-        RefreshAmbientUi();
-    }
 
     private void ImportAmbientFile_Click(object sender, RoutedEventArgs e)
     {
@@ -74,12 +60,19 @@ public partial class MainWindow
             return;
         }
 
+        if (side != _side)
+        {
+            AppMessageBox.Show(
+                $"This session is locked to {_side}. Please import a Feature_{_side}_#.png file.",
+                "Wrong drive side",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
         var bmp = Viewer.LoadAndConvertAmbientMask(ofd.FileName);
         StoreAmbientSlot(side, index, bmp, System.IO.Path.GetFileName(ofd.FileName));
-
-        // If this matches current side, push to viewer immediately
-        if (side == _side)
-            Viewer.SetAmbientSlot(index, bmp);
+        Viewer.SetAmbientSlot(index, bmp);
 
         RefreshAmbientUi();
     }

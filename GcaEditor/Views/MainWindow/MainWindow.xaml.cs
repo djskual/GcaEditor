@@ -1,11 +1,12 @@
 using GcaEditor.Data;
+using GcaEditor.IO;
 using GcaEditor.Models;
-using GcaEditor.UndoRedo;
 using GcaEditor.UI.Dialogs;
+using GcaEditor.UndoRedo;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
@@ -57,6 +58,7 @@ public partial class MainWindow : Window
             _uiReady = true;
 
             InitAmbientUiOnLoaded();
+            UpdateCurrentSideLabel();
             UpdateAmbientAvailability();
             RefreshCommandStates();
             UpdateWindowTitle();
@@ -300,9 +302,6 @@ public partial class MainWindow : Window
             ? "GcaEditor"
             : $"GcaEditor {buildTag}";
 
-        if (!string.IsNullOrWhiteSpace(_gcaPath))
-            title += $" - {Path.GetFileName(_gcaPath)}";
-
         if (IsDocumentDirty())
             title += " *";
 
@@ -381,6 +380,99 @@ public partial class MainWindow : Window
             MainLeftPanels.IsEnabled = !locked;
 
         RefreshCommandStates();
+    }
+
+    private void SetCurrentSide(DriveSide side)
+    {
+        _side = side;
+        UpdateCurrentSideLabel();
+        ApplyAmbientSideToViewer();
+        RefreshAmbientUi();
+    }
+
+    private void UpdateCurrentSideLabel()
+    {
+        if (CurrentSideLabel == null)
+            return;
+
+        CurrentSideLabel.Text = _side == DriveSide.RHD ? "RHD" : "LHD";
+    }
+
+    private void ResetWorkspaceForCarChange()
+    {
+        if (_placingAmbientIndex != null)
+            ExitAmbientPlacementMode();
+
+        if (_movingAmbientIndex != null)
+            ExitAmbientMoveMode();
+
+        _gcaPath = null;
+        _doc = null;
+        _lastSavedDocSignature = null;
+
+        _history.Clear();
+        _ambientIdsInitiallyInDoc.Clear();
+
+        for (int i = 0; i <= 22; i++)
+        {
+            ClearAmbientSlot(DriveSide.LHD, i);
+            ClearAmbientSlot(DriveSide.RHD, i);
+
+            _ambientRgbEnabledLhd[i] = false;
+            _ambientRgbEnabledRhd[i] = false;
+        }
+
+        Viewer.LoadDocument(null);
+        Viewer.ClearAllAmbient();
+        Viewer.SetBackground(null);
+
+        RefreshZonesUi();
+        RefreshAmbientUi();
+        UpdateAmbientAvailability();
+        RefreshDirtyState();
+    }
+
+    private bool TrySaveCurrentGca()
+    {
+        if (_doc == null)
+            return true;
+
+        var sfd = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "GCA (*.gca)|*.gca",
+            Title = "Save GCA",
+            FileName = _gcaPath != null ? Path.GetFileName(_gcaPath) : "menu.gca"
+        };
+
+        if (sfd.ShowDialog() != true)
+            return false;
+
+        GcaCodec.Save(sfd.FileName, _doc);
+        _gcaPath = sfd.FileName;
+        MarkDocumentClean();
+
+        AppMessageBox.Show("GCA saved.");
+        return true;
+    }
+
+    private bool TryConfirmDiscardChanges()
+    {
+        if (!IsDocumentDirty())
+            return true;
+
+        var result = AppMessageBox.Show(
+            "The current GCA has unsaved changes.\n\nDo you want to save before continuing?",
+            "Unsaved changes",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Cancel)
+            return false;
+
+        if (result == MessageBoxResult.No)
+            return true;
+
+        return TrySaveCurrentGca();
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e)

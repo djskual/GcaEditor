@@ -37,7 +37,11 @@ public partial class MainWindow
 
             // Populate available IDs: Known IDs not already in doc
             var existing = _doc.Zones.Select(z => z.Id).ToHashSet();
-            var available = _zoneCatalog.KnownZoneIds.Where(id => !existing.Contains(id)).ToList();
+            var available = Enumerable
+                           .Range(0x00, 0x0C) // 0 ? 11
+                           .Select(i => (ushort)i)
+                           .Where(id => !existing.Contains(id))
+                           .ToList();
 
             AddZoneCombo.ItemsSource = available;
             if (available.Count > 0)
@@ -86,40 +90,13 @@ public partial class MainWindow
     {
         if (_doc == null)
         {
-            AppMessageBox.Show("Charge un GCA d'abord.");
+            AppMessageBox.Show("Load first a GCA file.");
             return;
         }
 
-        // 1) Priorite au custom si rempli
-        ushort? zoneId = null;
-
-        var customText = CustomZoneIdBox.Text?.Trim();
-        if (!string.IsNullOrWhiteSpace(customText))
+        if (AddZoneCombo.SelectedItem is not ushort zoneId)
         {
-            if (!ushort.TryParse(customText, out var customId))
-            {
-                AppMessageBox.Show("ID custom invalide. Entrez un nombre entre 0 et 65535.");
-                return;
-            }
-            zoneId = customId;
-        }
-        else
-        {
-            // 2) Sinon, prendre depuis la liste connue
-            if (AddZoneCombo.SelectedItem is ushort knownId)
-                zoneId = knownId;
-        }
-
-        if (zoneId == null)
-        {
-            AppMessageBox.Show("Choisis une zone dans la liste ou saisis un ID custom.");
-            return;
-        }
-
-        // Security: forbid duplicate ID in the GCA
-        if (_doc.Zones.Any(z => z.Id == zoneId.Value))
-        {
-            AppMessageBox.Show($"La zone {zoneId.Value} existe deja dans ce GCA. Supprime-la avant, ou choisis un autre ID.");
+            AppMessageBox.Show("Chose a zone in the available list.");
             return;
         }
 
@@ -128,15 +105,12 @@ public partial class MainWindow
 
         // Place at current viewport center in image coords
         var center = Viewer.GetViewportCenterInImageCoords();
-        AddZoneInternal(zoneId.Value, center.X, center.Y);
+        AddZoneInternal(zoneId, center.X, center.Y);
 
         Viewer.LoadDocument(_doc);
         RefreshZonesUi();
 
-        Viewer.SelectZoneById(zoneId.Value);
-
-        // Reset custom box
-        CustomZoneIdBox.Text = "";
+        Viewer.SelectZoneById(zoneId);
 
         RefreshDirtyState();
     }
@@ -145,14 +119,14 @@ public partial class MainWindow
     {
         if (_doc == null)
         {
-            AppMessageBox.Show("Charge un GCA d'abord.");
+            AppMessageBox.Show("First load a GCA file.");
             return;
         }
 
         var sel = Viewer.SelectedZoneId;
         if (sel == null)
         {
-            AppMessageBox.Show("Selectionne une zone a supprimer.");
+            AppMessageBox.Show("Select a zone to delete.");
             return;
         }
 

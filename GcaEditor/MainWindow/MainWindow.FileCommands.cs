@@ -19,7 +19,7 @@ public partial class MainWindow
         {
             cat = CarCatalogLoader.LoadOrThrow();
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             AppMessageBox.Show("Failed to load car.json: " + ex.Message);
             return;
@@ -27,12 +27,22 @@ public partial class MainWindow
 
         var dlg = new ChooseCarWindow(cat) { Owner = this };
         bool? ok = dlg.ShowDialog();
-        if (ok != true) return;
+        if (ok != true)
+            return;
+
+        if (!TryConfirmDiscardChanges())
+            return;
+
+        var selectedSide = dlg.SelectedSide == "RHD" ? DriveSide.RHD : DriveSide.LHD;
+
+        ResetWorkspaceForCarChange();
+        SetCurrentSide(selectedSide);
 
         if (dlg.IsCustom)
         {
-            CurrentCarLabel.Text = "Car: Custom";
+            CurrentCarLabel.Text = $"Car: Custom - {dlg.SelectedSide}";
             MibLabel.Text = "MIB: -";
+
             SetStartupLocked(false);
             RefreshCommandStates();
             UpdateWindowTitle();
@@ -45,10 +55,7 @@ public partial class MainWindow
         string carsRoot = CarCatalogLoader.GetCarsRoot();
         string carFolder = Path.Combine(carsRoot, dlg.SelectedMib, dlg.SelectedCar.id);
 
-        // Side determines which background and which GCA to use:
-        // LHD -> 0.gca
-        // RHD -> 1.gca
-        bool isRhd = dlg.SelectedSide == "RHD";
+        bool isRhd = selectedSide == DriveSide.RHD;
         int gcaIndex = isRhd ? 1 : 0;
 
         string bgFile = isRhd ? cat.background.rhd : cat.background.lhd;
@@ -60,43 +67,28 @@ public partial class MainWindow
             AppMessageBox.Show("Background not found: " + bgPath);
             return;
         }
+
         if (!File.Exists(gcaPath))
         {
             AppMessageBox.Show("GCA not found: " + gcaPath);
             return;
         }
 
-        // Load background
         var bi = new BitmapImage();
         bi.BeginInit();
         bi.CacheOption = BitmapCacheOption.OnLoad;
-        bi.UriSource = new System.Uri(bgPath);
+        bi.UriSource = new Uri(bgPath);
         bi.EndInit();
         bi.Freeze();
 
         Viewer.SetBackground(bi);
         UpdateMibLabelFromBackground(bi);
-        var fitH = ViewerHost.ActualHeight;
 
+        var fitH = ViewerHost.ActualHeight;
         Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, fitH);
 
-        // Load GCA
         LoadGcaFromPath(gcaPath);
-
-        // Load features for both sides
-        LoadAmbientFeaturesFromCarFolder(carFolder);
-
-        // Apply side selection
-        if (isRhd)
-        {
-            SideRhd.IsChecked = true;
-            _side = DriveSide.RHD;
-        }
-        else
-        {
-            SideLhd.IsChecked = true;
-            _side = DriveSide.LHD;
-        }
+        LoadAmbientFeaturesFromCarFolder(carFolder, selectedSide);
 
         ApplyAmbientSideToViewer();
         RefreshAmbientUi();
@@ -159,13 +151,15 @@ public partial class MainWindow
         }
     }
 
-    private void LoadAmbientFeaturesFromCarFolder(string carFolder)
+    private void LoadAmbientFeaturesFromCarFolder(string carFolder, DriveSide targetSide)
     {
-        // Reset runtime slots
         for (int i = 0; i <= 22; i++)
         {
             ClearAmbientSlot(DriveSide.LHD, i);
             ClearAmbientSlot(DriveSide.RHD, i);
+
+            _ambientRgbEnabledLhd[i] = false;
+            _ambientRgbEnabledRhd[i] = false;
         }
 
         var files = Directory.GetFiles(carFolder, "Feature_*.png", SearchOption.TopDirectoryOnly);
@@ -175,6 +169,9 @@ public partial class MainWindow
             if (!TryParseFeatureName(name, out var side, out var index))
                 continue;
 
+            if (side != targetSide)
+                continue;
+
             try
             {
                 var bmp = Viewer.LoadAndConvertAmbientMask(f);
@@ -182,7 +179,7 @@ public partial class MainWindow
             }
             catch
             {
-                // ignore
+                // ignore one broken file
             }
         }
     }
@@ -192,7 +189,7 @@ public partial class MainWindow
         var ofd = new OpenFileDialog
         {
             Filter = "PNG (*.png)|*.png",
-            Title = "Fond menu lumieres (MIB2.5 1280x556 or MIB2 800x417)"
+            Title = "Import Background (MIB2.5 1280x556 or MIB2 800x417)"
         };
         if (ofd.ShowDialog() != true) return;
 
@@ -226,14 +223,14 @@ public partial class MainWindow
     {
         if (!Viewer.HasBackground)
         {
-            AppMessageBox.Show("Tu dois d'abord importer un background (PNG 1280x556 or 800x417) avant de charger un .gca.");
+            AppMessageBox.Show("You must import a background first (PNG 1280x556 or 800x417) before opening a .gca file."); 
             return;
         }
 
         var ofd = new OpenFileDialog
         {
             Filter = "GCA (*.gca)|*.gca|All files|*.*",
-            Title = "Ouvrir un fichier GCA"
+            Title = "Open GCA file"
         };
         if (ofd.ShowDialog() != true) return;
 
@@ -242,23 +239,7 @@ public partial class MainWindow
 
     private void SaveGca_Click(object sender, RoutedEventArgs e)
     {
-        if (_doc == null)
-            return;
-
-        var sfd = new SaveFileDialog
-        {
-            Filter = "GCA (*.gca)|*.gca",
-            Title = "Enregistrer le GCA",
-            FileName = _gcaPath != null ? System.IO.Path.GetFileName(_gcaPath) : "menu.gca"
-        };
-
-        if (sfd.ShowDialog() != true) return;
-
-        GcaCodec.Save(sfd.FileName, _doc);
-        _gcaPath = sfd.FileName;
-        MarkDocumentClean();
-
-        AppMessageBox.Show("GCA sauvegarde.");
+        TrySaveCurrentGca();
     }
 
     private void Save_Executed(object sender, ExecutedRoutedEventArgs e)

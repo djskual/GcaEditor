@@ -18,7 +18,7 @@ public partial class GcaViewer
         {
             int delta = (short)((wParam.ToInt64() >> 16) & 0xFFFF);
             double step = (delta / 120.0) * 140.0;
-            EditorScroll.ScrollToHorizontalOffset(EditorScroll.HorizontalOffset - step);
+            EditorScroll.ScrollToHorizontalOffset(EditorScroll.HorizontalOffset + step);
             handled = true;
         }
         return IntPtr.Zero;
