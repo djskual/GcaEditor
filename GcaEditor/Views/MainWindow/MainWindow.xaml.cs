@@ -4,6 +4,7 @@ using GcaEditor.UndoRedo;
 using GcaEditor.UI.Dialogs;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
@@ -24,6 +25,7 @@ public partial class MainWindow : Window
 
     private GcaDocument? _doc;
     private string? _gcaPath;
+    private string? _lastSavedDocSignature;
 
     private readonly UndoRedoStack<EditorState> _history;
     private readonly ZoneCatalog _zoneCatalog;
@@ -36,7 +38,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        Title = $"GcaEditor {GetBuildTag()}";
+        UpdateWindowTitle();
 
         _zoneCatalog = ZoneCatalog.LoadOrDefault();
         _history = new UndoRedoStack<EditorState>(s => s.DeepClone(), maxUndo: 100);
@@ -46,7 +48,7 @@ public partial class MainWindow : Window
 
         // Startup: lock the UI until Choose car (or Custom) is selected
         SetStartupLocked(true);
-        UpdateMenuState();
+        RefreshCommandStates();
 
         RefreshZonesUi();
 
@@ -56,7 +58,8 @@ public partial class MainWindow : Window
 
             InitAmbientUiOnLoaded();
             UpdateAmbientAvailability();
-            UpdateMenuState();
+            RefreshCommandStates();
+            UpdateWindowTitle();
 
             InitZoneOpacityUi();
         };
@@ -285,6 +288,91 @@ public partial class MainWindow : Window
         }
     }
 
+    private void RefreshCommandStates()
+    {
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void UpdateWindowTitle()
+    {
+        var buildTag = GetBuildTag();
+        var title = string.IsNullOrWhiteSpace(buildTag) || buildTag == "unknown"
+            ? "GcaEditor"
+            : $"GcaEditor {buildTag}";
+
+        if (!string.IsNullOrWhiteSpace(_gcaPath))
+            title += $" - {Path.GetFileName(_gcaPath)}";
+
+        if (IsDocumentDirty())
+            title += " *";
+
+        Title = title;
+    }
+
+    private bool IsDocumentDirty()
+    {
+        if (_doc == null)
+            return false;
+
+        return !string.Equals(
+            ComputeDocumentSignature(_doc),
+            _lastSavedDocSignature,
+            StringComparison.Ordinal);
+    }
+
+    private void MarkDocumentClean()
+    {
+        _lastSavedDocSignature = _doc != null
+            ? ComputeDocumentSignature(_doc)
+            : null;
+
+        UpdateWindowTitle();
+        RefreshCommandStates();
+    }
+
+    private void RefreshDirtyState()
+    {
+        UpdateWindowTitle();
+        RefreshCommandStates();
+    }
+
+    private static string ComputeDocumentSignature(GcaDocument doc)
+    {
+        var sb = new StringBuilder();
+
+        sb.Append("V:").Append(doc.Version).Append('|');
+        sb.Append("H:").Append(doc.HeaderUnk0).Append('|');
+
+        foreach (var z in doc.Zones.OrderBy(z => z.Id))
+        {
+            sb.Append("Z:")
+              .Append(z.Id).Append(',')
+              .Append(z.A).Append(',')
+              .Append(z.B).Append(',')
+              .Append(z.C).Append(',')
+              .Append(z.X1).Append(',')
+              .Append(z.Y1).Append(',')
+              .Append(z.X2).Append(',')
+              .Append(z.Y2).Append(',')
+              .Append(z.X3).Append(',')
+              .Append(z.Y3).Append(',')
+              .Append(z.X4).Append(',')
+              .Append(z.Y4)
+              .Append('|');
+        }
+
+        foreach (var img in doc.Images.OrderBy(i => i.Id))
+        {
+            sb.Append("I:")
+              .Append(img.Id).Append(',')
+              .Append(img.X).Append(',')
+              .Append(img.Y)
+              .Append('|');
+        }
+
+        return sb.ToString();
+    }
+    
     void SetStartupLocked(bool locked)
     {
         _startupLocked = locked;
@@ -292,12 +380,7 @@ public partial class MainWindow : Window
         if (MainLeftPanels != null)
             MainLeftPanels.IsEnabled = !locked;
 
-        CommandManager.InvalidateRequerySuggested();
-    }
-
-    private void UpdateMenuState()
-    {
-        CommandManager.InvalidateRequerySuggested();
+        RefreshCommandStates();
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e)
@@ -348,6 +431,7 @@ public partial class MainWindow : Window
             if (_doc == null) return;
             _history.PushUndoSnapshot(CaptureState(beforeSnapshot));
             RefreshZonesUi();
+            RefreshDirtyState();
         };
 
         Viewer.SelectedZoneChanged += (_, zoneId) =>
@@ -450,6 +534,7 @@ public partial class MainWindow : Window
 
             Viewer.RefreshAmbientIdFromDoc(e.Id);
             RefreshAmbientUi();
+            RefreshDirtyState();
 
             ExitAmbientMoveMode();
         };

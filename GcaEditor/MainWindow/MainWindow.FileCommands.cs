@@ -34,7 +34,8 @@ public partial class MainWindow
             CurrentCarLabel.Text = "Car: Custom";
             MibLabel.Text = "MIB: -";
             SetStartupLocked(false);
-            CommandManager.InvalidateRequerySuggested();
+            RefreshCommandStates();
+            UpdateWindowTitle();
             return;
         }
 
@@ -103,7 +104,8 @@ public partial class MainWindow
         CurrentCarLabel.Text = "Car: " + dlg.SelectedCar.id + " - " + dlg.SelectedCar.name + " - " + dlg.SelectedMib + " - " + dlg.SelectedSide;
 
         SetStartupLocked(false);
-        CommandManager.InvalidateRequerySuggested();
+        RefreshCommandStates();
+        UpdateWindowTitle();
     }
 
     private void LoadGcaFromPath(string path)
@@ -116,8 +118,10 @@ public partial class MainWindow
 
         try
         {
+            var doc = GcaCodec.Load(path);
+
             _gcaPath = path;
-            _doc = GcaCodec.Load(_gcaPath);
+            _doc = doc;
 
             _history.Clear();
             Viewer.LoadDocument(_doc);
@@ -127,7 +131,7 @@ public partial class MainWindow
             RefreshZonesUi();
             RefreshAmbientUi();
             UpdateAmbientAvailability();
-            CommandManager.InvalidateRequerySuggested();
+            MarkDocumentClean();
         }
         catch (InvalidDataException ex)
         {
@@ -204,7 +208,8 @@ public partial class MainWindow
         Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
 
         UpdateAmbientAvailability();
-        CommandManager.InvalidateRequerySuggested();
+        RefreshCommandStates();
+        UpdateWindowTitle();
     }
 
     private void ViewerHost_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -250,8 +255,10 @@ public partial class MainWindow
         if (sfd.ShowDialog() != true) return;
 
         GcaCodec.Save(sfd.FileName, _doc);
+        _gcaPath = sfd.FileName;
+        MarkDocumentClean();
+
         AppMessageBox.Show("GCA sauvegarde.");
-        CommandManager.InvalidateRequerySuggested();
     }
 
     private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -262,6 +269,7 @@ public partial class MainWindow
     private void Save_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
         e.CanExecute = _doc != null;
+        e.Handled = true;
     }
 
     private void UpdateMibLabelFromBackground(BitmapSource bg)

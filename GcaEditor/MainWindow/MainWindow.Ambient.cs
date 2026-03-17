@@ -70,7 +70,7 @@ public partial class MainWindow
 
         if (!TryParseFeatureName(System.IO.Path.GetFileName(ofd.FileName), out var side, out var index))
         {
-            AppMessageBox.Show("Nom invalide. Attendu: Feature_LHD_0.png .. Feature_LHD_22.png (ou RHD).", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+            AppMessageBox.Show("Invalid Name. Expected: Feature_LHD_0.png .. Feature_LHD_22.png (or RHD).", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -118,7 +118,7 @@ public partial class MainWindow
         }
 
         if (imported == 0)
-            AppMessageBox.Show($"Aucune image trouvee pour {_side}. Attendu: Feature_{_side}_0.png .. Feature_{_side}_22.png");
+            AppMessageBox.Show($"None image found for {_side}. Expected: Feature_{_side}_0.png .. Feature_{_side}_22.png");
 
         RefreshAmbientUi();
         AppMessageBox.Show($"Imported {imported} image(s) for {_side}.");
@@ -130,7 +130,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            MessageBox.Show("Selectionne un slot (0..22) dans la liste.");
+            AppMessageBox.Show("Select a slot (0..22) in the list");
             return;
         }
 
@@ -172,6 +172,7 @@ public partial class MainWindow
         }
 
         RefreshAmbientUi();
+        RefreshDirtyState();
     }
 
     private void ApplyAmbientSideToViewer()
@@ -331,6 +332,7 @@ public partial class MainWindow
         Viewer.RefreshAmbientIdFromDoc(idxSlot);
         Viewer.SetAmbientSlotVisible(idxSlot, true);
         RefreshAmbientUi();
+        RefreshDirtyState();
 
         ExitAmbientPlacementMode();
     }
@@ -463,7 +465,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            AppMessageBox.Show("Selectionne un slot (0..22) dans la liste.");
+            AppMessageBox.Show("Select a slot (0..22) in the list.");
             return;
         }
 
@@ -474,14 +476,14 @@ public partial class MainWindow
 
         if (idxSlot < 0 || idxSlot > 22 || slots[idxSlot] == null)
         {
-            AppMessageBox.Show("Aucune image chargee dans ce slot.");
+            AppMessageBox.Show("No image loaded into this slot.");
             return;
         }
 
         bool positioned = Viewer.IsAmbientIdPositionedInDoc(idxSlot);
         if (!positioned)
         {
-            AppMessageBox.Show("Image pending: place-la d'abord avant Hide/Show.");
+            AppMessageBox.Show("Image pending: Place it first, before Hide/Show.");
             return;
         }
 
@@ -499,7 +501,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            AppMessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
+            AppMessageBox.Show("Select an image (slot 0..22) from the list.");
             return;
         }
 
@@ -511,14 +513,14 @@ public partial class MainWindow
 
         if (slots[idxSlot] == null)
         {
-            AppMessageBox.Show("Ce slot est vide. Importe d'abord une image.");
+            AppMessageBox.Show("This slot is empty. Import an image first.");
             return;
         }
 
         // Place only if pending
         if (Viewer.IsAmbientIdPositionedInDoc(idxSlot))
         {
-            AppMessageBox.Show("Cette image est deja positionnee. Place est dispo uniquement en pending.");
+            AppMessageBox.Show("This image is already positioned. Place is only available on a pending basis.");
             return;
         }
 
@@ -537,7 +539,7 @@ public partial class MainWindow
 
         if (AmbientList.SelectedItem is not AmbientSlotItem it)
         {
-            AppMessageBox.Show("Selectionne une image (slot 0..22) dans la liste.");
+            AppMessageBox.Show("Select an image (slot 0..22) from the list.");
             return;
         }
 
@@ -549,7 +551,7 @@ public partial class MainWindow
 
         if (!loaded || !positioned)
         {
-            AppMessageBox.Show("Move est disponible uniquement si l image est loaded + positioned.");
+            AppMessageBox.Show("Move is only available if the image is loaded and positioned.");
             return;
         }
 

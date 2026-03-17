@@ -137,6 +137,8 @@ public partial class MainWindow
 
         // Reset custom box
         CustomZoneIdBox.Text = "";
+
+        RefreshDirtyState();
     }
 
     private void DeleteZone_Click(object sender, RoutedEventArgs e)
@@ -162,6 +164,7 @@ public partial class MainWindow
         Viewer.LoadDocument(_doc);
         RefreshZonesUi();
         UpdateZoneOpacitySelection(null);
+        RefreshDirtyState();
     }
 
     private void AddZoneInternal(ushort id, double centerX, double centerY)

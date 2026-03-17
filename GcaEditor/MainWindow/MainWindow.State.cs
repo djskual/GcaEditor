@@ -41,6 +41,7 @@ public partial class MainWindow
         ApplyAmbientSideToViewer();
         RefreshZonesUi();
         RefreshAmbientUi();
+        RefreshDirtyState();
     }
 
     private void Undo_CanExecute(object sender, CanExecuteRoutedEventArgs e)

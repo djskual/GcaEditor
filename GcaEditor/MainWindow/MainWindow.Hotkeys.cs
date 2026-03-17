@@ -130,6 +130,7 @@ public partial class MainWindow
             Viewer.LoadDocument(_doc);
             ApplyAmbientSideToViewer();
             RefreshAmbientUi();
+            RefreshDirtyState();
         }
 
         _ambientNudgeNeedsRefresh = false;
