@@ -13,6 +13,15 @@ namespace GcaEditor;
 
 public partial class MainWindow : Window
 {
+    public static readonly RoutedUICommand OpenGcaCommand =
+        new("Open GCA", nameof(OpenGcaCommand), typeof(MainWindow));
+
+    public static readonly RoutedUICommand ImportBackgroundCommand =
+        new("Import Background", nameof(ImportBackgroundCommand), typeof(MainWindow));
+
+    public static readonly RoutedUICommand ChooseCarCommand =
+        new("Choose Car", nameof(ChooseCarCommand), typeof(MainWindow)); 
+
     private GcaDocument? _doc;
     private string? _gcaPath;
 
@@ -21,6 +30,7 @@ public partial class MainWindow : Window
 
     private bool _suppressListSelection;
     private bool _uiReady = false;
+    private bool _startupLocked = true;
 
     public MainWindow()
     {
@@ -36,6 +46,7 @@ public partial class MainWindow : Window
 
         // Startup: lock the UI until Choose car (or Custom) is selected
         SetStartupLocked(true);
+        UpdateMenuState();
 
         RefreshZonesUi();
 
@@ -45,6 +56,7 @@ public partial class MainWindow : Window
 
             InitAmbientUiOnLoaded();
             UpdateAmbientAvailability();
+            UpdateMenuState();
 
             InitZoneOpacityUi();
         };
@@ -272,25 +284,55 @@ public partial class MainWindow : Window
             return "unknown";
         }
     }
-    
+
     void SetStartupLocked(bool locked)
     {
-        // Choose car is always available
-        if (ChooseCarButton != null)
-            ChooseCarButton.IsEnabled = true;
-
-        // Disable everything else until a profile or Custom is selected
-        if (MainControlsPanel != null)
-            MainControlsPanel.IsEnabled = !locked;
+        _startupLocked = locked;
 
         if (MainLeftPanels != null)
             MainLeftPanels.IsEnabled = !locked;
 
-        if (locked)
-        {
-            // Keep these coherent even if panels are enabled later
-            if (OpenGcaButton != null) OpenGcaButton.IsEnabled = false;
-        }
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void UpdateMenuState()
+    {
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void Exit_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ChooseCar_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        ChooseCar_Click(sender, new RoutedEventArgs());
+    }
+
+    private void ChooseCar_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = true;
+    }
+
+    private void ImportBackground_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        ImportBackground_Click(sender, new RoutedEventArgs());
+    }
+
+    private void ImportBackground_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = !_startupLocked;
+    }
+
+    private void OpenGca_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        OpenGca_Click(sender, new RoutedEventArgs());
+    }
+
+    private void OpenGca_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = !_startupLocked && Viewer != null && Viewer.HasBackground;
     }
 
     private void WireWindowEvents()

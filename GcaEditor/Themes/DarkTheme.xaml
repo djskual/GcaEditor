@@ -645,11 +645,34 @@
                         Margin="2,2"
                         SnapsToDevicePixels="True">
                         <Grid>
-                            <ContentPresenter x:Name="HeaderHost"
+                            <!-- Header top-level -->
+                            <ContentPresenter x:Name="TopLevelHeaderHost"
                                           Margin="8,4"
                                           ContentSource="Header"
                                           RecognizesAccessKey="True"
                                           TextElement.Foreground="{TemplateBinding Foreground}"/>
+
+                            <!-- Header submenu -->
+                            <Grid x:Name="SubmenuHeaderGrid"
+                              Margin="8,4"
+                              Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ContentPresenter Grid.Column="0"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+
+                                <TextBlock Grid.Column="1"
+                                       Margin="24,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource AppMutedTextBrush}"
+                                       Text="{TemplateBinding InputGestureText}"/>
+                            </Grid>
+
                             <Popup x:Name="PART_Popup"
                                Placement="Bottom"
                                AllowsTransparency="True"
@@ -685,10 +708,24 @@
 
                         <Trigger Property="Role" Value="TopLevelHeader">
                             <Setter Property="Padding" Value="10,6"/>
+                            <Setter TargetName="TopLevelHeaderHost" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="SubmenuHeaderGrid" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+
+                        <Trigger Property="Role" Value="TopLevelItem">
+                            <Setter TargetName="TopLevelHeaderHost" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="SubmenuHeaderGrid" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+
+                        <Trigger Property="Role" Value="SubmenuHeader">
+                            <Setter TargetName="TopLevelHeaderHost" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="SubmenuHeaderGrid" Property="Visibility" Value="Visible"/>
                         </Trigger>
 
                         <Trigger Property="Role" Value="SubmenuItem">
                             <Setter TargetName="Bd" Property="BorderThickness" Value="0"/>
+                            <Setter TargetName="TopLevelHeaderHost" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="SubmenuHeaderGrid" Property="Visibility" Value="Visible"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

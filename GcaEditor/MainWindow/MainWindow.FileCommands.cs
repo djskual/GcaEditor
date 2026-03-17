@@ -32,7 +32,9 @@ public partial class MainWindow
         if (dlg.IsCustom)
         {
             CurrentCarLabel.Text = "Car: Custom";
+            MibLabel.Text = "MIB: -";
             SetStartupLocked(false);
+            CommandManager.InvalidateRequerySuggested();
             return;
         }
 
@@ -101,7 +103,7 @@ public partial class MainWindow
         CurrentCarLabel.Text = "Car: " + dlg.SelectedCar.id + " - " + dlg.SelectedCar.name + " - " + dlg.SelectedMib + " - " + dlg.SelectedSide;
 
         SetStartupLocked(false);
-        OpenGcaButton.IsEnabled = true;
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private void LoadGcaFromPath(string path)
@@ -125,6 +127,7 @@ public partial class MainWindow
             RefreshZonesUi();
             RefreshAmbientUi();
             UpdateAmbientAvailability();
+            CommandManager.InvalidateRequerySuggested();
         }
         catch (InvalidDataException ex)
         {
@@ -200,10 +203,8 @@ public partial class MainWindow
         UpdateMibLabelFromBackground(bi);
         Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
 
-        // Now we can open a GCA
-        OpenGcaButton.IsEnabled = true;
-
         UpdateAmbientAvailability();
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private void ViewerHost_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -250,6 +251,7 @@ public partial class MainWindow
 
         GcaCodec.Save(sfd.FileName, _doc);
         AppMessageBox.Show("GCA sauvegarde.");
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private void Save_Executed(object sender, ExecutedRoutedEventArgs e)

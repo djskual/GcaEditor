@@ -2,10 +2,11 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:GcaEditor.UI.Controls"
+        xmlns:local="clr-namespace:GcaEditor"
         Icon="/Assets/app.ico"
         Title="GCA Editor"
         Width="1400"
-        Height="900"
+        Height="800"
         Background="{DynamicResource AppWindowBackgroundBrush}"
         Foreground="{DynamicResource AppTextBrush}">
 
@@ -13,12 +14,18 @@
         <CommandBinding Command="ApplicationCommands.Undo" Executed="Undo_Executed" CanExecute="Undo_CanExecute"/>
         <CommandBinding Command="ApplicationCommands.Redo" Executed="Redo_Executed" CanExecute="Redo_CanExecute"/>
         <CommandBinding Command="ApplicationCommands.Save" Executed="Save_Executed" CanExecute="Save_CanExecute"/>
+        <CommandBinding Command="{x:Static local:MainWindow.OpenGcaCommand}" Executed="OpenGca_Executed" CanExecute="OpenGca_CanExecute"/>
+        <CommandBinding Command="{x:Static local:MainWindow.ImportBackgroundCommand}" Executed="ImportBackground_Executed" CanExecute="ImportBackground_CanExecute"/>
+        <CommandBinding Command="{x:Static local:MainWindow.ChooseCarCommand}" Executed="ChooseCar_Executed" CanExecute="ChooseCar_CanExecute"/>
     </Window.CommandBindings>
 
     <Window.InputBindings>
         <KeyBinding Command="ApplicationCommands.Undo" Modifiers="Control" Key="Z"/>
         <KeyBinding Command="ApplicationCommands.Redo" Modifiers="Control" Key="Y"/>
         <KeyBinding Command="ApplicationCommands.Save" Modifiers="Control" Key="S"/>
+        <KeyBinding Command="{x:Static local:MainWindow.OpenGcaCommand}" Modifiers="Control" Key="O"/>
+        <KeyBinding Command="{x:Static local:MainWindow.ImportBackgroundCommand}" Modifiers="Control" Key="B"/>
+        <KeyBinding Command="{x:Static local:MainWindow.ChooseCarCommand}" Modifiers="Control+Shift" Key="C"/>
     </Window.InputBindings>
 
     <Grid Background="{DynamicResource AppWindowBackgroundBrush}">
@@ -35,15 +42,42 @@
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
             <MenuItem Header="_File">
-                <MenuItem Header="_Save .gca" Command="ApplicationCommands.Save" ToolTip="Ctrl+S" />
-            </MenuItem>
-            <MenuItem Header="_Edit">
-                <MenuItem Header="_Undo" Command="ApplicationCommands.Undo" ToolTip="Ctrl+Z" />
+                <MenuItem Header="_Open GCA..."
+                  Command="{x:Static local:MainWindow.OpenGcaCommand}"
+                  InputGestureText="Ctrl+O"/>
+
+                <MenuItem Header="_Save GCA"
+                  Command="ApplicationCommands.Save"
+                  InputGestureText="Ctrl+S"/>
+
                 <Separator/>
-                <MenuItem Header="_Redo" Command="ApplicationCommands.Redo" ToolTip="Ctrl+Y" />
+
+                <MenuItem Header="_Exit"
+                  Click="Exit_Click"/>
             </MenuItem>
+
+            <MenuItem Header="_Setup">
+                <MenuItem Header="_Choose Car..."
+                  Command="{x:Static local:MainWindow.ChooseCarCommand}"
+                  InputGestureText="Ctrl+Shift+C"/>
+
+                <MenuItem Header="_Import Background..."
+                  Command="{x:Static local:MainWindow.ImportBackgroundCommand}"
+                  InputGestureText="Ctrl+B"/>
+            </MenuItem>
+
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo"
+                  Command="ApplicationCommands.Undo"
+                  InputGestureText="Ctrl+Z"/>
+                <Separator/>
+                <MenuItem Header="_Redo"
+                  Command="ApplicationCommands.Redo"
+                  InputGestureText="Ctrl+Y"/>
+            </MenuItem>
+
             <MenuItem Header="_Help">
-                <MenuItem Header="Check for updates" Click="CheckUpdate_Click"/>
+                <MenuItem Header="_Check for updates" Click="CheckUpdate_Click"/>
                 <Separator/>
                 <MenuItem Header="_About" Click="About_Click"/>
             </MenuItem>
@@ -58,37 +92,19 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0">
+                <StackPanel Grid.Row="0">
+                    <TextBlock x:Name="CurrentCarLabel"
+                               Text="Car: -"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
+                               Margin="0,0,0,8"/>
 
-                <Button x:Name="ChooseCarButton"
-                        Content="Choose car"
-                        Click="ChooseCar_Click"
-                        Margin="0,0,0,6"/>
-
-                <TextBlock x:Name="CurrentCarLabel"
-                           Text="Car: -"
-                           Foreground="{DynamicResource AppMutedTextBrush}"
-                           Margin="0,0,0,10"/>
-
-                <StackPanel x:Name="MainControlsPanel">
-                <Button x:Name="ImportBackgroundButton"
-                        Content="Import Background (PNG 1280x556 or 800x417)"
-                        Click="ImportBackground_Click"
-                        Margin="0,0,0,6"/>
-
-                <Button x:Name="OpenGcaButton"
-                        Content="Open .gca"
-                        Click="OpenGca_Click"
-                        Margin="0,0,0,6"
-                        IsEnabled="False"/>
-                        <TextBlock x:Name="MibLabel"
-                           Text="MIB: -"
-                           Foreground="{DynamicResource AppMutedTextBrush}"
-                           Margin="0,0,0,12"/>
+                                    <TextBlock x:Name="MibLabel"
+                               Text="MIB: -"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
+                               Margin="0,0,0,12"/>
                 </StackPanel>
-            </StackPanel>
 
-            <StackPanel x:Name="MainLeftPanels" Grid.Row="2">
+                <StackPanel x:Name="MainLeftPanels" Grid.Row="2">
 
                 <!-- ZONES -->
                 <GroupBox Header="Zones" Padding="8" Height="215" Margin="0,0,0,10">
