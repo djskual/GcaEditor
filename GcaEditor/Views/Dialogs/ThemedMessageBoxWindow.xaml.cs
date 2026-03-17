@@ -21,8 +21,34 @@ public partial class ThemedMessageBoxWindow : Window
 
         ConfigureIcon(icon);
         ConfigureButtons(buttons);
+
+        KeyDown += ThemedMessageBoxWindow_KeyDown;
+        KeyDown += (s, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Escape)
+            {
+                CloseWithResult(MessageBoxResult.Cancel);
+            }
+        };
     }
 
+    private void ThemedMessageBoxWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Escape)
+            return;
+
+        if (CancelButton.Visibility == Visibility.Visible)
+            CloseWithResult(MessageBoxResult.Cancel);
+        else if (NoButton.Visibility == Visibility.Visible)
+            CloseWithResult(MessageBoxResult.No);
+        else if (OkButton.Visibility == Visibility.Visible)
+            CloseWithResult(MessageBoxResult.OK);
+        else
+            CloseWithResult(MessageBoxResult.None);
+
+        e.Handled = true;
+    }
+    
     private void ConfigureIcon(MessageBoxImage icon)
     {
         string glyph;
@@ -117,30 +143,48 @@ public partial class ThemedMessageBoxWindow : Window
         }
     }
 
-    private void CloseWithResult(MessageBoxResult result, bool? dialogResult)
+    private void CloseWithResult(MessageBoxResult result)
     {
         Result = result;
-        DialogResult = dialogResult;
         Close();
     }
 
+    private void CopyButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var title = CaptionText.Text?.Trim();
+            var message = MessageText.Text ?? string.Empty;
+
+            string textToCopy = string.IsNullOrWhiteSpace(title)
+                ? message
+                : $"{title}{Environment.NewLine}{Environment.NewLine}{message}";
+
+            Clipboard.SetText(textToCopy);
+        }
+        catch
+        {
+            // On ignore volontairement les erreurs clipboard
+        }
+    }
+    
     private void OkButton_Click(object sender, RoutedEventArgs e)
     {
-        CloseWithResult(MessageBoxResult.OK, true);
+        CloseWithResult(MessageBoxResult.OK);
     }
 
     private void YesButton_Click(object sender, RoutedEventArgs e)
     {
-        CloseWithResult(MessageBoxResult.Yes, true);
+        CloseWithResult(MessageBoxResult.Yes);
     }
 
     private void NoButton_Click(object sender, RoutedEventArgs e)
     {
-        CloseWithResult(MessageBoxResult.No, false);
+        CloseWithResult(MessageBoxResult.No);
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
-        CloseWithResult(MessageBoxResult.Cancel, false);
+        CloseWithResult(MessageBoxResult.Cancel);
     }
 }

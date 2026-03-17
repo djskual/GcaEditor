@@ -6,34 +6,43 @@ namespace GcaEditor.UI.Dialogs;
 
 public static class AppMessageBox
 {
+    private const string DefaultTitle = "GcaEditor";
+
     public static MessageBoxResult Show(string messageBoxText)
-        => Show(null, messageBoxText, "GcaEditor", MessageBoxButton.OK, MessageBoxImage.None);
+    => Show(null, messageBoxText, DefaultTitle, MessageBoxButton.OK, MessageBoxImage.None);
 
     public static MessageBoxResult Show(string messageBoxText, string caption)
-        => Show(null, messageBoxText, caption, MessageBoxButton.OK, MessageBoxImage.None);
+        => Show(null, messageBoxText, string.IsNullOrWhiteSpace(caption) ? DefaultTitle : caption, MessageBoxButton.OK, MessageBoxImage.None);
 
     public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button)
-        => Show(null, messageBoxText, caption, button, MessageBoxImage.None);
+        => Show(null, messageBoxText, string.IsNullOrWhiteSpace(caption) ? DefaultTitle : caption, button, MessageBoxImage.None);
 
     public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon)
-        => Show(null, messageBoxText, caption, button, icon);
+        => Show(null, messageBoxText, string.IsNullOrWhiteSpace(caption) ? DefaultTitle : caption, button, icon);
 
     public static MessageBoxResult Show(
-        Window? owner,
-        string messageBoxText,
-        string caption,
-        MessageBoxButton button,
-        MessageBoxImage icon)
+    Window? owner,
+    string messageBoxText,
+    string caption,
+    MessageBoxButton button,
+    MessageBoxImage icon)
     {
         var dialog = new ThemedMessageBoxWindow(
             messageBoxText,
-            caption,
+            string.IsNullOrWhiteSpace(caption) ? DefaultTitle : caption,
             button,
             icon);
 
         var resolvedOwner = ResolveOwner(owner);
         if (resolvedOwner != null && resolvedOwner != dialog)
+        {
             dialog.Owner = resolvedOwner;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        }
+        else
+        {
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
 
         dialog.ShowDialog();
         return dialog.Result;
