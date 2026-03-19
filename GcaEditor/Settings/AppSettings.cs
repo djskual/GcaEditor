@@ -20,9 +20,6 @@ public sealed class AppSettings
     public bool ConfirmBeforeDeletingZone { get; set; } = true;
     public bool ConfirmBeforeDeletingAmbientImage { get; set; } = true;
 
-    public bool ShowZoneLabels { get; set; } = true;
-    public bool ShowAmbientSlotMarkers { get; set; } = true;
-
     public bool AutoFitViewerAfterBackgroundLoad { get; set; } = true;
 
     public AppSettings Clone()
@@ -41,8 +38,6 @@ public sealed class AppSettings
             WindowTop = WindowTop,
             ConfirmBeforeDeletingZone = ConfirmBeforeDeletingZone,
             ConfirmBeforeDeletingAmbientImage = ConfirmBeforeDeletingAmbientImage,
-            ShowZoneLabels = ShowZoneLabels,
-            ShowAmbientSlotMarkers = ShowAmbientSlotMarkers,
             AutoFitViewerAfterBackgroundLoad = AutoFitViewerAfterBackgroundLoad
         };
     }

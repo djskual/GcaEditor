@@ -89,8 +89,6 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0">
@@ -114,20 +112,6 @@
                                        Margin="0,12,0,0"
                                        Foreground="{DynamicResource AppMutedTextBrush}"
                                        Text="Undo history changes apply on the next app launch."/>
-
-                            <CheckBox x:Name="ShowZoneLabelsCheck"
-                                      Grid.Row="2"
-                                      Style="{StaticResource LabeledCheckBoxStyle}"
-                                      Content="Show zone labels"
-                                      Margin="0,14,0,0"
-                                      Visibility="Collapsed"/>
-
-                            <CheckBox x:Name="ShowAmbientSlotMarkersCheck"
-                                      Grid.Row="3"
-                                      Style="{StaticResource LabeledCheckBoxStyle}"
-                                      Content="Show ambient slot markers"
-                                      Margin="0,10,0,0"
-                                      Visibility="Collapsed"/>
                         </Grid>
                     </StackPanel>
 

@@ -382,7 +382,7 @@ public partial class MainWindow : Window
         if (rememberPlacement)
             SaveWindowPlacementToSettings();
     }
-    
+
     private void UpdateWindowTitle()
     {
         var buildTag = GetBuildTag();

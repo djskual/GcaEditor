@@ -27,8 +27,6 @@ public partial class SettingsWindow : Window
         InvertHorizontalScrollCheck.IsChecked = _workingCopy.InvertHorizontalTrackpadScrolling;
         ConfirmBeforeDeleteZoneCheck.IsChecked = _workingCopy.ConfirmBeforeDeletingZone;
         ConfirmBeforeDeleteAmbientCheck.IsChecked = _workingCopy.ConfirmBeforeDeletingAmbientImage;
-        ShowZoneLabelsCheck.IsChecked = _workingCopy.ShowZoneLabels;
-        ShowAmbientSlotMarkersCheck.IsChecked = _workingCopy.ShowAmbientSlotMarkers;
         AutoFitViewerAfterBackgroundLoadCheck.IsChecked = _workingCopy.AutoFitViewerAfterBackgroundLoad;
 
         UndoHistoryCombo.SelectedItem = _workingCopy.MaxUndoHistory;
@@ -87,13 +85,13 @@ public partial class SettingsWindow : Window
                 break;
         }
 
-        SectionHost.Opacity = 0.0;
+        SectionHost.Opacity = 0.35;
 
         var fade = new DoubleAnimation
         {
             From = 0.0,
             To = 1.0,
-            Duration = TimeSpan.FromMilliseconds(140)
+            Duration = TimeSpan.FromMilliseconds(220)
         };
 
         SectionHost.BeginAnimation(OpacityProperty, fade);
@@ -108,8 +106,6 @@ public partial class SettingsWindow : Window
         _workingCopy.InvertHorizontalTrackpadScrolling = InvertHorizontalScrollCheck.IsChecked == true;
         _workingCopy.ConfirmBeforeDeletingZone = ConfirmBeforeDeleteZoneCheck.IsChecked == true;
         _workingCopy.ConfirmBeforeDeletingAmbientImage = ConfirmBeforeDeleteAmbientCheck.IsChecked == true;
-        _workingCopy.ShowZoneLabels = ShowZoneLabelsCheck.IsChecked == true;
-        _workingCopy.ShowAmbientSlotMarkers = ShowAmbientSlotMarkersCheck.IsChecked == true;
         _workingCopy.AutoFitViewerAfterBackgroundLoad = AutoFitViewerAfterBackgroundLoadCheck.IsChecked == true;
 
         if (UndoHistoryCombo.SelectedItem is int undoHistory)
