@@ -1,6 +1,7 @@
 using GcaEditor.Settings;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 
 namespace GcaEditor.Views;
 
@@ -24,23 +25,39 @@ public partial class SettingsWindow : Window
         RememberWindowPlacementCheck.IsChecked = _workingCopy.RememberWindowSizeAndPosition;
         ConfirmBeforeResetCheck.IsChecked = _workingCopy.ConfirmBeforeResettingWorkspace;
         InvertHorizontalScrollCheck.IsChecked = _workingCopy.InvertHorizontalTrackpadScrolling;
+        ConfirmBeforeDeleteZoneCheck.IsChecked = _workingCopy.ConfirmBeforeDeletingZone;
+        ConfirmBeforeDeleteAmbientCheck.IsChecked = _workingCopy.ConfirmBeforeDeletingAmbientImage;
+        ShowZoneLabelsCheck.IsChecked = _workingCopy.ShowZoneLabels;
+        ShowAmbientSlotMarkersCheck.IsChecked = _workingCopy.ShowAmbientSlotMarkers;
+        AutoFitViewerAfterBackgroundLoadCheck.IsChecked = _workingCopy.AutoFitViewerAfterBackgroundLoad;
 
         UndoHistoryCombo.SelectedItem = _workingCopy.MaxUndoHistory;
         if (UndoHistoryCombo.SelectedItem == null)
             UndoHistoryCombo.SelectedItem = 100;
 
-        Loaded += (_, __) => ShowSection(0);
+        Loaded += SettingsWindow_Loaded;
+    }
+
+    private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        ShowSection(0);
     }
 
     private void SectionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!IsLoaded)
+            return;
+
         ShowSection(SectionList.SelectedIndex);
     }
 
     private void ShowSection(int index)
     {
-        if (GeneralPanel == null)
+        if (GeneralPanel == null || EditorPanel == null || ViewerPanel == null || UpdatesPanel == null || SectionHost == null)
             return;
+
+        if (index < 0)
+            index = 0;
 
         GeneralPanel.Visibility = Visibility.Collapsed;
         EditorPanel.Visibility = Visibility.Collapsed;
@@ -69,6 +86,17 @@ public partial class SettingsWindow : Window
                 GeneralPanel.Visibility = Visibility.Visible;
                 break;
         }
+
+        SectionHost.Opacity = 0.0;
+
+        var fade = new DoubleAnimation
+        {
+            From = 0.0,
+            To = 1.0,
+            Duration = TimeSpan.FromMilliseconds(140)
+        };
+
+        SectionHost.BeginAnimation(OpacityProperty, fade);
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -78,6 +106,11 @@ public partial class SettingsWindow : Window
         _workingCopy.RememberWindowSizeAndPosition = RememberWindowPlacementCheck.IsChecked == true;
         _workingCopy.ConfirmBeforeResettingWorkspace = ConfirmBeforeResetCheck.IsChecked == true;
         _workingCopy.InvertHorizontalTrackpadScrolling = InvertHorizontalScrollCheck.IsChecked == true;
+        _workingCopy.ConfirmBeforeDeletingZone = ConfirmBeforeDeleteZoneCheck.IsChecked == true;
+        _workingCopy.ConfirmBeforeDeletingAmbientImage = ConfirmBeforeDeleteAmbientCheck.IsChecked == true;
+        _workingCopy.ShowZoneLabels = ShowZoneLabelsCheck.IsChecked == true;
+        _workingCopy.ShowAmbientSlotMarkers = ShowAmbientSlotMarkersCheck.IsChecked == true;
+        _workingCopy.AutoFitViewerAfterBackgroundLoad = AutoFitViewerAfterBackgroundLoadCheck.IsChecked == true;
 
         if (UndoHistoryCombo.SelectedItem is int undoHistory)
             _workingCopy.MaxUndoHistory = undoHistory;

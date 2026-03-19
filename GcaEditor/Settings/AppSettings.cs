@@ -17,6 +17,14 @@ public sealed class AppSettings
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
 
+    public bool ConfirmBeforeDeletingZone { get; set; } = true;
+    public bool ConfirmBeforeDeletingAmbientImage { get; set; } = true;
+
+    public bool ShowZoneLabels { get; set; } = true;
+    public bool ShowAmbientSlotMarkers { get; set; } = true;
+
+    public bool AutoFitViewerAfterBackgroundLoad { get; set; } = true;
+
     public AppSettings Clone()
     {
         return new AppSettings
@@ -30,7 +38,12 @@ public sealed class AppSettings
             WindowWidth = WindowWidth,
             WindowHeight = WindowHeight,
             WindowLeft = WindowLeft,
-            WindowTop = WindowTop
+            WindowTop = WindowTop,
+            ConfirmBeforeDeletingZone = ConfirmBeforeDeletingZone,
+            ConfirmBeforeDeletingAmbientImage = ConfirmBeforeDeletingAmbientImage,
+            ShowZoneLabels = ShowZoneLabels,
+            ShowAmbientSlotMarkers = ShowAmbientSlotMarkers,
+            AutoFitViewerAfterBackgroundLoad = AutoFitViewerAfterBackgroundLoad
         };
     }
 

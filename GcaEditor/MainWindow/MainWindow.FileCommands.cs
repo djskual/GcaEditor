@@ -2,6 +2,7 @@ using GcaEditor.Data;
 using GcaEditor.IO;
 using GcaEditor.Views;
 using GcaEditor.UI.Dialogs;
+using GcaEditor.Settings;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -84,8 +85,11 @@ public partial class MainWindow
         Viewer.SetBackground(bi);
         UpdateMibLabelFromBackground(bi);
 
-        var fitH = ViewerHost.ActualHeight;
-        Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, fitH);
+        if (AppSettingsStore.Current.AutoFitViewerAfterBackgroundLoad)
+        {
+            var fitH = ViewerHost.ActualHeight;
+            Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, fitH);
+        }
 
         LoadGcaFromPath(gcaPath);
         LoadAmbientFeaturesFromCarFolder(carFolder, selectedSide);
@@ -202,7 +206,9 @@ public partial class MainWindow
 
         Viewer.SetBackground(bi);
         UpdateMibLabelFromBackground(bi);
-        Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
+
+        if (AppSettingsStore.Current.AutoFitViewerAfterBackgroundLoad)
+            Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
 
         UpdateAmbientAvailability();
         RefreshCommandStates();

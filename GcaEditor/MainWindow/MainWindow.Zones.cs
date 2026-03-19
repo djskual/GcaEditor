@@ -1,4 +1,5 @@
 using GcaEditor.Models;
+using GcaEditor.Settings;
 using GcaEditor.UI.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
@@ -128,6 +129,18 @@ public partial class MainWindow
         {
             AppMessageBox.Show("Select a zone to delete.");
             return;
+        }
+
+        if (AppSettingsStore.Current.ConfirmBeforeDeletingZone)
+        {
+            var result = AppMessageBox.Show(
+                $"Delete zone {sel.Value}?",
+                "Delete zone",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
         }
 
         // Undo snapshot BEFORE mutation

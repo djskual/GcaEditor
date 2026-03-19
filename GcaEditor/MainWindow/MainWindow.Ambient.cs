@@ -1,6 +1,7 @@
 using GcaEditor.Models;
-using GcaEditor.UI.Interop;
+using GcaEditor.Settings;
 using GcaEditor.UI.Dialogs;
+using GcaEditor.UI.Interop;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -142,6 +143,18 @@ public partial class MainWindow
         // Nothing to delete
         if (!loaded && !positioned)
             return;
+
+        if (AppSettingsStore.Current.ConfirmBeforeDeletingAmbientImage)
+        {
+            var result = AppMessageBox.Show(
+                $"Delete ambient image in slot {idx:00}?",
+                "Delete ambient image",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+        }
 
         // Push snapshot BEFORE any changes so delete is undoable for both pending and native images
         _history.PushUndoSnapshot(CaptureState());
