@@ -22,6 +22,18 @@ public sealed class AppSettings
 
     public bool AutoFitViewerAfterBackgroundLoad { get; set; } = true;
 
+    public string? DefaultSaveFolder { get; set; }
+
+    public bool AutoLoadLastProject { get; set; } = false;
+
+    public bool LastProjectIsCustom { get; set; }
+    public string? LastProjectCarId { get; set; }
+    public string? LastProjectCarName { get; set; }
+    public string? LastProjectMib { get; set; }
+    public string? LastProjectSide { get; set; }
+    public string? LastProjectBackgroundPath { get; set; }
+    public string? LastProjectGcaPath { get; set; }
+
     public AppSettings Clone()
     {
         return new AppSettings
@@ -38,7 +50,16 @@ public sealed class AppSettings
             WindowTop = WindowTop,
             ConfirmBeforeDeletingZone = ConfirmBeforeDeletingZone,
             ConfirmBeforeDeletingAmbientImage = ConfirmBeforeDeletingAmbientImage,
-            AutoFitViewerAfterBackgroundLoad = AutoFitViewerAfterBackgroundLoad
+            AutoFitViewerAfterBackgroundLoad = AutoFitViewerAfterBackgroundLoad,
+            DefaultSaveFolder = DefaultSaveFolder,
+            AutoLoadLastProject = AutoLoadLastProject,
+            LastProjectIsCustom = LastProjectIsCustom,
+            LastProjectCarId = LastProjectCarId,
+            LastProjectCarName = LastProjectCarName,
+            LastProjectMib = LastProjectMib,
+            LastProjectSide = LastProjectSide,
+            LastProjectBackgroundPath = LastProjectBackgroundPath,
+            LastProjectGcaPath = LastProjectGcaPath,
         };
     }
 
@@ -49,5 +70,28 @@ public sealed class AppSettings
 
         if (MaxUndoHistory > 500)
             MaxUndoHistory = 500;
+
+        if (string.IsNullOrWhiteSpace(DefaultSaveFolder))
+            DefaultSaveFolder = null;
+        else
+            DefaultSaveFolder = DefaultSaveFolder.Trim();
+
+        if (string.IsNullOrWhiteSpace(LastProjectCarId))
+            LastProjectCarId = null;
+
+        if (string.IsNullOrWhiteSpace(LastProjectCarName))
+            LastProjectCarName = null;
+
+        if (string.IsNullOrWhiteSpace(LastProjectMib))
+            LastProjectMib = null;
+
+        if (string.IsNullOrWhiteSpace(LastProjectSide))
+            LastProjectSide = null;
+
+        if (string.IsNullOrWhiteSpace(LastProjectBackgroundPath))
+            LastProjectBackgroundPath = null;
+
+        if (string.IsNullOrWhiteSpace(LastProjectGcaPath))
+            LastProjectGcaPath = null;
     }
 }

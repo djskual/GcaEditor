@@ -59,8 +59,13 @@
                                    Margin="0,0,0,14"/>
 
                         <CheckBox x:Name="RememberWindowPlacementCheck"
+                                   Style="{StaticResource LabeledCheckBoxStyle}"
+                                   Content="Remember window size and position"/>
+
+                        <CheckBox x:Name="AutoLoadLastProjectCheck"
                                   Style="{StaticResource LabeledCheckBoxStyle}"
-                                  Content="Remember window size and position"/>
+                                  Content="Auto-load last project at startup"
+                                  Margin="0,10,0,0"/>
 
                         <CheckBox x:Name="ConfirmBeforeResetCheck"
                                   Style="{StaticResource LabeledCheckBoxStyle}"
@@ -76,6 +81,33 @@
                                   Style="{StaticResource LabeledCheckBoxStyle}"
                                   Content="Confirm before deleting an ambient image"
                                   Margin="0,10,0,0"/>
+
+                        <TextBlock Text="Default save folder"
+                                   Margin="0,18,0,6"
+                                   Foreground="{DynamicResource AppMutedTextBrush}"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="DefaultSaveFolderTextBox"
+                                     Grid.Column="0"
+                                     Height="30"
+                                     VerticalContentAlignment="Center"/>
+
+                            <Button Grid.Column="2"
+                                    Width="90"
+                                    Height="30"
+                                    Content="Browse..."
+                                    Click="BrowseDefaultSaveFolder_Click"/>
+                        </Grid>
+
+                        <TextBlock Margin="0,8,0,0"
+                                   Foreground="{DynamicResource AppMutedTextBrush}"
+                                   Text="If empty, the Save GCA dialog opens in the currently loaded GCA folder."/>
                     </StackPanel>
 
                     <!-- EDITOR -->

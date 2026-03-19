@@ -1,9 +1,9 @@
 using GcaEditor.Data;
 using GcaEditor.IO;
 using GcaEditor.Models;
+using GcaEditor.Settings;
 using GcaEditor.UI.Dialogs;
 using GcaEditor.UndoRedo;
-using GcaEditor.Settings;
 using GcaEditor.Views;
 using System.Diagnostics;
 using System.IO;
@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace GcaEditor;
 
@@ -36,6 +37,12 @@ public partial class MainWindow : Window
     private bool _suppressListSelection;
     private bool _uiReady = false;
     private bool _startupLocked = true;
+
+    private string? _backgroundPath;
+    private bool _currentSessionIsCustom;
+    private string? _currentCarId;
+    private string? _currentCarName;
+    private string? _currentMib;
 
     public MainWindow()
     {
@@ -69,6 +76,8 @@ public partial class MainWindow : Window
             UpdateWindowTitle();
 
             InitZoneOpacityUi();
+
+            TryAutoLoadLastProject();
 
             if (AppSettingsStore.Current.AutoCheckUpdatesOnStartup)
                 _ = CheckForUpdatesAsync(silentIfUpToDate: true, silentOnError: true);
@@ -498,6 +507,12 @@ public partial class MainWindow : Window
         _doc = null;
         _lastSavedDocSignature = null;
 
+        _backgroundPath = null;
+        _currentSessionIsCustom = false;
+        _currentCarId = null;
+        _currentCarName = null;
+        _currentMib = null;
+
         _history.Clear();
         _ambientIdsInitiallyInDoc.Clear();
 
@@ -520,6 +535,130 @@ public partial class MainWindow : Window
         RefreshDirtyState();
     }
 
+    private string GetEffectiveSaveDirectory()
+    {
+        var configured = AppSettingsStore.Current.DefaultSaveFolder;
+        if (!string.IsNullOrWhiteSpace(configured) && Directory.Exists(configured))
+            return configured;
+
+        if (!string.IsNullOrWhiteSpace(_gcaPath))
+        {
+            var gcaDir = Path.GetDirectoryName(_gcaPath);
+            if (!string.IsNullOrWhiteSpace(gcaDir) && Directory.Exists(gcaDir))
+                return gcaDir;
+        }
+
+        return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+    }
+
+    private void SaveLastProjectSnapshot()
+    {
+        if (_startupLocked &&
+            string.IsNullOrWhiteSpace(_backgroundPath) &&
+            string.IsNullOrWhiteSpace(_gcaPath) &&
+            string.IsNullOrWhiteSpace(_currentCarId) &&
+            !_currentSessionIsCustom)
+        {
+            return;
+        }
+
+        var updated = AppSettingsStore.Current.Clone();
+
+        updated.LastProjectIsCustom = _currentSessionIsCustom;
+        updated.LastProjectCarId = _currentCarId;
+        updated.LastProjectCarName = _currentCarName;
+        updated.LastProjectMib = _currentMib;
+        updated.LastProjectSide = _side == DriveSide.RHD ? "RHD" : "LHD";
+        updated.LastProjectBackgroundPath = _backgroundPath;
+        updated.LastProjectGcaPath = _gcaPath;
+
+        AppSettingsStore.Save(updated);
+    }
+
+    private void TryAutoLoadLastProject()
+    {
+        var settings = AppSettingsStore.Current;
+        if (!settings.AutoLoadLastProject)
+            return;
+
+        bool hasProjectContext =
+            settings.LastProjectIsCustom ||
+            !string.IsNullOrWhiteSpace(settings.LastProjectCarId) ||
+            !string.IsNullOrWhiteSpace(settings.LastProjectBackgroundPath) ||
+            !string.IsNullOrWhiteSpace(settings.LastProjectGcaPath);
+
+        if (!hasProjectContext)
+            return;
+
+        var selectedSide = string.Equals(settings.LastProjectSide, "RHD", StringComparison.OrdinalIgnoreCase)
+            ? DriveSide.RHD
+            : DriveSide.LHD;
+
+        ResetWorkspaceForCarChange();
+        SetCurrentSide(selectedSide);
+
+        _currentSessionIsCustom = settings.LastProjectIsCustom;
+        _currentCarId = settings.LastProjectCarId;
+        _currentCarName = settings.LastProjectCarName;
+        _currentMib = settings.LastProjectMib;
+
+        if (!string.IsNullOrWhiteSpace(settings.LastProjectBackgroundPath) &&
+            File.Exists(settings.LastProjectBackgroundPath))
+        {
+            var bi = new BitmapImage();
+            bi.BeginInit();
+            bi.CacheOption = BitmapCacheOption.OnLoad;
+            bi.UriSource = new Uri(settings.LastProjectBackgroundPath);
+            bi.EndInit();
+            bi.Freeze();
+
+            _backgroundPath = settings.LastProjectBackgroundPath;
+            Viewer.SetBackground(bi);
+            UpdateMibLabelFromBackground(bi);
+
+            if (AppSettingsStore.Current.AutoFitViewerAfterBackgroundLoad)
+                Viewer.SizeToHostAndFit(ViewerHost.ActualWidth, ViewerHost.ActualHeight);
+        }
+
+        if (!_currentSessionIsCustom &&
+            !string.IsNullOrWhiteSpace(_currentCarId) &&
+            !string.IsNullOrWhiteSpace(_currentMib))
+        {
+            string carsRoot = CarCatalogLoader.GetCarsRoot();
+            string carFolder = Path.Combine(carsRoot, _currentMib, _currentCarId);
+
+            if (Directory.Exists(carFolder))
+                LoadAmbientFeaturesFromCarFolder(carFolder, selectedSide);
+        }
+
+        if (!string.IsNullOrWhiteSpace(settings.LastProjectGcaPath) &&
+            File.Exists(settings.LastProjectGcaPath) &&
+            Viewer.HasBackground)
+        {
+            LoadGcaFromPath(settings.LastProjectGcaPath);
+        }
+
+        if (_currentSessionIsCustom)
+        {
+            CurrentCarLabel.Text = $"Car: Custom - {settings.LastProjectSide ?? "LHD"}";
+
+            if (!Viewer.HasBackground)
+                MibLabel.Text = "MIB: -";
+        }
+        else if (!string.IsNullOrWhiteSpace(_currentCarId))
+        {
+            var carName = string.IsNullOrWhiteSpace(_currentCarName) ? "Unknown" : _currentCarName;
+            var mib = string.IsNullOrWhiteSpace(_currentMib) ? "-" : _currentMib;
+            var sideText = settings.LastProjectSide ?? "LHD";
+
+            CurrentCarLabel.Text = $"Car: {_currentCarId} - {carName} - {mib} - {sideText}";
+        }
+
+        SetStartupLocked(false);
+        RefreshCommandStates();
+        UpdateWindowTitle();
+    }
+    
     private bool TrySaveCurrentGca()
     {
         if (_doc == null)
@@ -529,6 +668,7 @@ public partial class MainWindow : Window
         {
             Filter = "GCA (*.gca)|*.gca",
             Title = "Save GCA",
+            InitialDirectory = GetEffectiveSaveDirectory(),
             FileName = _gcaPath != null ? Path.GetFileName(_gcaPath) : "menu.gca"
         };
 
@@ -538,6 +678,7 @@ public partial class MainWindow : Window
         GcaCodec.Save(sfd.FileName, _doc);
         _gcaPath = sfd.FileName;
         MarkDocumentClean();
+        SaveLastProjectSnapshot();
 
         AppMessageBox.Show("GCA saved.");
         return true;
@@ -605,7 +746,11 @@ public partial class MainWindow : Window
     {
         PreviewKeyDown += MainWindow_PreviewKeyDown;
         PreviewKeyUp += MainWindow_PreviewKeyUp;
-        Closing += (_, __) => SaveWindowPlacementToSettings();
+        Closing += (_, __) =>
+        {
+            SaveLastProjectSnapshot();
+            SaveWindowPlacementToSettings();
+        };
     }
 
     private void WireViewerEvents()

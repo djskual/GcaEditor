@@ -39,6 +39,11 @@ public partial class MainWindow
         ResetWorkspaceForCarChange();
         SetCurrentSide(selectedSide);
 
+        _currentSessionIsCustom = dlg.IsCustom;
+        _currentCarId = dlg.IsCustom ? null : dlg.SelectedCar?.id;
+        _currentCarName = dlg.IsCustom ? null : dlg.SelectedCar?.name;
+        _currentMib = dlg.IsCustom ? null : dlg.SelectedMib;
+
         if (dlg.IsCustom)
         {
             CurrentCarLabel.Text = $"Car: Custom - {dlg.SelectedSide}";
@@ -47,6 +52,7 @@ public partial class MainWindow
             SetStartupLocked(false);
             RefreshCommandStates();
             UpdateWindowTitle();
+            SaveLastProjectSnapshot();
             return;
         }
 
@@ -82,6 +88,7 @@ public partial class MainWindow
         bi.EndInit();
         bi.Freeze();
 
+        _backgroundPath = bgPath;
         Viewer.SetBackground(bi);
         UpdateMibLabelFromBackground(bi);
 
@@ -102,6 +109,7 @@ public partial class MainWindow
         SetStartupLocked(false);
         RefreshCommandStates();
         UpdateWindowTitle();
+        SaveLastProjectSnapshot();
     }
 
     private void LoadGcaFromPath(string path)
@@ -128,6 +136,7 @@ public partial class MainWindow
             RefreshAmbientUi();
             UpdateAmbientAvailability();
             MarkDocumentClean();
+            SaveLastProjectSnapshot();
         }
         catch (InvalidDataException ex)
         {
@@ -204,6 +213,7 @@ public partial class MainWindow
         bi.EndInit();
         bi.Freeze();
 
+        _backgroundPath = ofd.FileName;
         Viewer.SetBackground(bi);
         UpdateMibLabelFromBackground(bi);
 
@@ -213,6 +223,7 @@ public partial class MainWindow
         UpdateAmbientAvailability();
         RefreshCommandStates();
         UpdateWindowTitle();
+        SaveLastProjectSnapshot();
     }
 
     private void ViewerHost_SizeChanged(object sender, SizeChangedEventArgs e)

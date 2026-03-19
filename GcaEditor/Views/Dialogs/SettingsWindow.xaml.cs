@@ -1,4 +1,5 @@
 using GcaEditor.Settings;
+using GcaEditor.UI.Interop;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
@@ -23,6 +24,8 @@ public partial class SettingsWindow : Window
         AutoCheckUpdatesCheck.IsChecked = _workingCopy.AutoCheckUpdatesOnStartup;
         IncludePrereleaseCheck.IsChecked = _workingCopy.IncludePrereleaseVersionsInUpdateCheck;
         RememberWindowPlacementCheck.IsChecked = _workingCopy.RememberWindowSizeAndPosition;
+        AutoLoadLastProjectCheck.IsChecked = _workingCopy.AutoLoadLastProject;
+        DefaultSaveFolderTextBox.Text = _workingCopy.DefaultSaveFolder ?? string.Empty;
         ConfirmBeforeResetCheck.IsChecked = _workingCopy.ConfirmBeforeResettingWorkspace;
         InvertHorizontalScrollCheck.IsChecked = _workingCopy.InvertHorizontalTrackpadScrolling;
         ConfirmBeforeDeleteZoneCheck.IsChecked = _workingCopy.ConfirmBeforeDeletingZone;
@@ -97,11 +100,22 @@ public partial class SettingsWindow : Window
         SectionHost.BeginAnimation(OpacityProperty, fade);
     }
 
+    private void BrowseDefaultSaveFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var folder = FolderPicker.PickFolder("Choose default save folder");
+        if (!string.IsNullOrWhiteSpace(folder))
+            DefaultSaveFolderTextBox.Text = folder;
+    }
+
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         _workingCopy.AutoCheckUpdatesOnStartup = AutoCheckUpdatesCheck.IsChecked == true;
         _workingCopy.IncludePrereleaseVersionsInUpdateCheck = IncludePrereleaseCheck.IsChecked == true;
         _workingCopy.RememberWindowSizeAndPosition = RememberWindowPlacementCheck.IsChecked == true;
+        _workingCopy.AutoLoadLastProject = AutoLoadLastProjectCheck.IsChecked == true;
+        _workingCopy.DefaultSaveFolder = string.IsNullOrWhiteSpace(DefaultSaveFolderTextBox.Text)
+            ? null
+            : DefaultSaveFolderTextBox.Text.Trim();
         _workingCopy.ConfirmBeforeResettingWorkspace = ConfirmBeforeResetCheck.IsChecked == true;
         _workingCopy.InvertHorizontalTrackpadScrolling = InvertHorizontalScrollCheck.IsChecked == true;
         _workingCopy.ConfirmBeforeDeletingZone = ConfirmBeforeDeleteZoneCheck.IsChecked == true;
