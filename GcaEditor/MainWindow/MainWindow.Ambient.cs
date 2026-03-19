@@ -75,7 +75,13 @@ public partial class MainWindow
         StoreAmbientSlot(side, index, bmp, System.IO.Path.GetFileName(ofd.FileName));
         Viewer.SetAmbientSlot(index, bmp);
 
+        if (side == DriveSide.RHD)
+            _ambientSourcePathRhd[index] = ofd.FileName;
+        else
+            _ambientSourcePathLhd[index] = ofd.FileName;
+
         RefreshAmbientUi();
+        SaveLastProjectSnapshot();
     }
 
     private void ImportAmbientFolder_Click(object sender, RoutedEventArgs e)
@@ -103,6 +109,12 @@ public partial class MainWindow
                 var bmp = Viewer.LoadAndConvertAmbientMask(f);
                 StoreAmbientSlot(side, index, bmp, name);
                 Viewer.SetAmbientSlot(index, bmp);
+
+                if (side == DriveSide.RHD)
+                    _ambientSourcePathRhd[index] = f;
+                else
+                    _ambientSourcePathLhd[index] = f;
+
                 imported++;
             }
             catch
@@ -116,6 +128,8 @@ public partial class MainWindow
 
         RefreshAmbientUi();
         AppMessageBox.Show($"Imported {imported} image(s) for {_side}.");
+
+        SaveLastProjectSnapshot();
     }
 
     private void ClearAmbient_Click(object sender, RoutedEventArgs e)
@@ -163,6 +177,11 @@ public partial class MainWindow
         ClearAmbientSlot(_side, idx);
         Viewer.ClearAmbientSlot(idx);
 
+        if (_side == DriveSide.RHD)
+            _ambientSourcePathRhd[idx] = null;
+        else
+            _ambientSourcePathLhd[idx] = null;
+
         // If there is a doc entry for this ID:
         // - keep it if it existed when the GCA was opened (Missing expected)
         // - remove it if it was created by user in this session (Empty expected)
@@ -179,6 +198,7 @@ public partial class MainWindow
 
         RefreshAmbientUi();
         RefreshDirtyState();
+        SaveLastProjectSnapshot();
     }
 
     private void ApplyAmbientSideToViewer()

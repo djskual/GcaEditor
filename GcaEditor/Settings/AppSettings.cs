@@ -1,5 +1,12 @@
 namespace GcaEditor.Settings;
 
+public sealed class LastProjectAmbientEntry
+{
+    public int Index { get; set; }
+    public string Side { get; set; } = "LHD";
+    public string Path { get; set; } = string.Empty;
+}
+
 public sealed class AppSettings
 {
     public bool AutoCheckUpdatesOnStartup { get; set; } = true;
@@ -33,6 +40,7 @@ public sealed class AppSettings
     public string? LastProjectSide { get; set; }
     public string? LastProjectBackgroundPath { get; set; }
     public string? LastProjectGcaPath { get; set; }
+    public List<LastProjectAmbientEntry> LastProjectAmbientFiles { get; set; } = new();
 
     public AppSettings Clone()
     {
@@ -60,7 +68,15 @@ public sealed class AppSettings
             LastProjectSide = LastProjectSide,
             LastProjectBackgroundPath = LastProjectBackgroundPath,
             LastProjectGcaPath = LastProjectGcaPath,
-        };
+            LastProjectAmbientFiles = LastProjectAmbientFiles
+                .Select(x => new LastProjectAmbientEntry
+                {
+                    Index = x.Index,
+                    Side = x.Side,
+                    Path = x.Path
+                })
+                .ToList(),
+                    };
     }
 
     public void Normalize()
@@ -93,5 +109,20 @@ public sealed class AppSettings
 
         if (string.IsNullOrWhiteSpace(LastProjectGcaPath))
             LastProjectGcaPath = null;
-    }
+
+        LastProjectAmbientFiles = LastProjectAmbientFiles
+            .Where(x => x != null
+                     && x.Index >= 0
+                     && x.Index <= 22
+                     && !string.IsNullOrWhiteSpace(x.Side)
+                     && !string.IsNullOrWhiteSpace(x.Path))
+            .Select(x => new LastProjectAmbientEntry
+            {
+                Index = x.Index,
+                Side = x.Side.Trim().ToUpperInvariant(),
+                Path = x.Path.Trim()
+            })
+            .Where(x => x.Side == "LHD" || x.Side == "RHD")
+            .ToList();
+            }
 }

@@ -44,6 +44,9 @@ public partial class MainWindow : Window
     private string? _currentCarName;
     private string? _currentMib;
 
+    private readonly string?[] _ambientSourcePathLhd = new string?[23];
+    private readonly string?[] _ambientSourcePathRhd = new string?[23];
+
     public MainWindow()
     {
         InitializeComponent();
@@ -523,6 +526,9 @@ public partial class MainWindow : Window
 
             _ambientRgbEnabledLhd[i] = false;
             _ambientRgbEnabledRhd[i] = false;
+
+            _ambientSourcePathLhd[i] = null;
+            _ambientSourcePathRhd[i] = null;
         }
 
         Viewer.LoadDocument(null);
@@ -571,6 +577,27 @@ public partial class MainWindow : Window
         updated.LastProjectSide = _side == DriveSide.RHD ? "RHD" : "LHD";
         updated.LastProjectBackgroundPath = _backgroundPath;
         updated.LastProjectGcaPath = _gcaPath;
+        updated.LastProjectAmbientFiles.Clear();
+
+        if (_currentSessionIsCustom)
+        {
+            var sourceArray = _side == DriveSide.RHD ? _ambientSourcePathRhd : _ambientSourcePathLhd;
+            string sideText = _side == DriveSide.RHD ? "RHD" : "LHD";
+
+            for (int i = 0; i <= 22; i++)
+            {
+                var path = sourceArray[i];
+                if (string.IsNullOrWhiteSpace(path))
+                    continue;
+
+                updated.LastProjectAmbientFiles.Add(new LastProjectAmbientEntry
+                {
+                    Index = i,
+                    Side = sideText,
+                    Path = path
+                });
+            }
+        }
 
         AppSettingsStore.Save(updated);
     }
@@ -652,6 +679,45 @@ public partial class MainWindow : Window
             var sideText = settings.LastProjectSide ?? "LHD";
 
             CurrentCarLabel.Text = $"Car: {_currentCarId} - {carName} - {mib} - {sideText}";
+        }
+
+        if (_currentSessionIsCustom && settings.LastProjectAmbientFiles.Count > 0)
+        {
+            foreach (var entry in settings.LastProjectAmbientFiles)
+            {
+                if (!string.Equals(entry.Side, settings.LastProjectSide, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (entry.Index < 0 || entry.Index > 22)
+                    continue;
+
+                if (!File.Exists(entry.Path))
+                    continue;
+
+                try
+                {
+                    var bmp = Viewer.LoadAndConvertAmbientMask(entry.Path);
+                    var side = string.Equals(entry.Side, "RHD", StringComparison.OrdinalIgnoreCase)
+                        ? DriveSide.RHD
+                        : DriveSide.LHD;
+
+                    StoreAmbientSlot(side, entry.Index, bmp, Path.GetFileName(entry.Path));
+
+                    if (side == _side)
+                        Viewer.SetAmbientSlot(entry.Index, bmp);
+
+                    if (side == DriveSide.RHD)
+                        _ambientSourcePathRhd[entry.Index] = entry.Path;
+                    else
+                        _ambientSourcePathLhd[entry.Index] = entry.Path;
+                }
+                catch
+                {
+                    // Ignore one broken or unreadable file and continue restoring the rest
+                }
+            }
+
+            RefreshAmbientUi();
         }
 
         SetStartupLocked(false);
