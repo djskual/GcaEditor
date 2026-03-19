@@ -1,5 +1,6 @@
 using GcaEditor.Settings;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace GcaEditor.Views;
 
@@ -27,6 +28,47 @@ public partial class SettingsWindow : Window
         UndoHistoryCombo.SelectedItem = _workingCopy.MaxUndoHistory;
         if (UndoHistoryCombo.SelectedItem == null)
             UndoHistoryCombo.SelectedItem = 100;
+
+        Loaded += (_, __) => ShowSection(0);
+    }
+
+    private void SectionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ShowSection(SectionList.SelectedIndex);
+    }
+
+    private void ShowSection(int index)
+    {
+        if (GeneralPanel == null)
+            return;
+
+        GeneralPanel.Visibility = Visibility.Collapsed;
+        EditorPanel.Visibility = Visibility.Collapsed;
+        ViewerPanel.Visibility = Visibility.Collapsed;
+        UpdatesPanel.Visibility = Visibility.Collapsed;
+
+        switch (index)
+        {
+            case 0:
+                GeneralPanel.Visibility = Visibility.Visible;
+                break;
+
+            case 1:
+                EditorPanel.Visibility = Visibility.Visible;
+                break;
+
+            case 2:
+                ViewerPanel.Visibility = Visibility.Visible;
+                break;
+
+            case 3:
+                UpdatesPanel.Visibility = Visibility.Visible;
+                break;
+
+            default:
+                GeneralPanel.Visibility = Visibility.Visible;
+                break;
+        }
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

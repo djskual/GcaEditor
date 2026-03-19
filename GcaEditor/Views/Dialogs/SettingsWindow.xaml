@@ -2,10 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Settings"
-        Width="500"
-        Height="470"
-        MinWidth="500"
-        MinHeight="470"
+        Width="720"
+        Height="430"
+        MinWidth="720"
+        MinHeight="430"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{DynamicResource AppWindowBackgroundBrush}"
@@ -13,76 +13,127 @@
 
     <Grid Margin="12">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="10"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="10"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="10"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <GroupBox Grid.Row="0" Header="General">
-            <StackPanel>
-                <CheckBox x:Name="AutoCheckUpdatesCheck"
-                          Style="{StaticResource LabeledCheckBoxStyle}"
-                          Content="Check for updates automatically at startup"/>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <CheckBox x:Name="RememberWindowPlacementCheck"
-                          Style="{StaticResource LabeledCheckBoxStyle}"
-                          Content="Remember window size and position"
-                          Margin="0,8,0,0"/>
+            <!-- LEFT NAV -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource AppPanelBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="8">
+                <ListBox x:Name="SectionList"
+                         SelectionChanged="SectionList_SelectionChanged"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         SelectedIndex="0">
+                    <ListBoxItem x:Name="NavGeneral" Content="General"/>
+                    <ListBoxItem x:Name="NavEditor" Content="Editor"/>
+                    <ListBoxItem x:Name="NavViewer" Content="Viewer"/>
+                    <ListBoxItem x:Name="NavUpdates" Content="Updates"/>
+                </ListBox>
+            </Border>
 
-                <CheckBox x:Name="ConfirmBeforeResetCheck"
-                          Style="{StaticResource LabeledCheckBoxStyle}"
-                          Content="Confirm before resetting the current workspace"
-                          Margin="0,8,0,0"/>
-            </StackPanel>
-        </GroupBox>
+            <!-- RIGHT CONTENT -->
+            <Border Grid.Column="2"
+                    Background="{DynamicResource AppPanelBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="14">
+                <Grid>
+                    <!-- GENERAL -->
+                    <StackPanel x:Name="GeneralPanel">
+                        <TextBlock Text="General"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,14"/>
 
-        <GroupBox Grid.Row="2" Header="Editor">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="120"/>
-                </Grid.ColumnDefinitions>
+                        <CheckBox x:Name="AutoCheckUpdatesCheck"
+                                  Style="{StaticResource LabeledCheckBoxStyle}"
+                                  Content="Check for updates automatically at startup"/>
 
-                <TextBlock Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="Maximum undo history"/>
+                        <CheckBox x:Name="RememberWindowPlacementCheck"
+                                  Style="{StaticResource LabeledCheckBoxStyle}"
+                                  Content="Remember window size and position"
+                                  Margin="0,10,0,0"/>
 
-                <ComboBox x:Name="UndoHistoryCombo"
-                          Grid.Column="1"
-                          Width="100"
-                          HorizontalAlignment="Right"
-                          IsEditable="False"/>
-            </Grid>
-        </GroupBox>
+                        <CheckBox x:Name="ConfirmBeforeResetCheck"
+                                  Style="{StaticResource LabeledCheckBoxStyle}"
+                                  Content="Confirm before resetting the current workspace"
+                                  Margin="0,10,0,0"/>
+                    </StackPanel>
 
-        <TextBlock Grid.Row="4"
-                   Margin="4,0,0,0"
-                   Foreground="{DynamicResource AppMutedTextBrush}"
-                   Text="Undo history changes apply on the next app launch."/>
+                    <!-- EDITOR -->
+                    <StackPanel x:Name="EditorPanel" Visibility="Collapsed">
+                        <TextBlock Text="Editor"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,14"/>
 
-        <GroupBox Grid.Row="6" Header="Viewer">
-            <StackPanel>
-                <CheckBox x:Name="InvertHorizontalScrollCheck"
-                          Style="{StaticResource LabeledCheckBoxStyle}"
-                          Content="Invert horizontal trackpad scrolling"/>
-            </StackPanel>
-        </GroupBox>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="140"/>
+                            </Grid.ColumnDefinitions>
 
-        <GroupBox Grid.Row="7" Header="Updates" Margin="0,10,0,0">
-            <StackPanel>
-                <CheckBox x:Name="IncludePrereleaseCheck"
-                          Style="{StaticResource LabeledCheckBoxStyle}"
-                          Content="Include prerelease versions in update checks"/>
-            </StackPanel>
-        </GroupBox>
+                            <TextBlock Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Text="Maximum undo history"/>
 
-        <StackPanel Grid.Row="8"
+                            <ComboBox x:Name="UndoHistoryCombo"
+                                      Grid.Column="1"
+                                      Width="110"
+                                      HorizontalAlignment="Right"
+                                      IsEditable="False"/>
+                        </Grid>
+
+                        <TextBlock Margin="0,12,0,0"
+                                   Foreground="{DynamicResource AppMutedTextBrush}"
+                                   Text="Undo history changes apply on the next app launch."/>
+                    </StackPanel>
+
+                    <!-- VIEWER -->
+                    <StackPanel x:Name="ViewerPanel" Visibility="Collapsed">
+                        <TextBlock Text="Viewer"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,14"/>
+
+                        <CheckBox x:Name="InvertHorizontalScrollCheck"
+                                  Style="{StaticResource LabeledCheckBoxStyle}"
+                                  Content="Invert horizontal trackpad scrolling"/>
+                    </StackPanel>
+
+                    <!-- UPDATES -->
+                    <StackPanel x:Name="UpdatesPanel" Visibility="Collapsed">
+                        <TextBlock Text="Updates"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,14"/>
+
+                        <CheckBox x:Name="IncludePrereleaseCheck"
+                                  Style="{StaticResource LabeledCheckBoxStyle}"
+                                  Content="Include prerelease versions in update checks"/>
+
+                        <TextBlock Margin="0,12,0,0"
+                                   Foreground="{DynamicResource AppMutedTextBrush}"
+                                   Text="When enabled, beta and prerelease versions are considered during update checks."/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0,12,0,0">
@@ -98,4 +149,3 @@
         </StackPanel>
     </Grid>
 </Window>
-    
