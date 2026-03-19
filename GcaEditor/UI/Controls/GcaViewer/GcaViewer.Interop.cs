@@ -1,4 +1,5 @@
 using System.Windows.Interop;
+using GcaEditor.Settings;
 
 namespace GcaEditor.UI.Controls;
 
@@ -18,7 +19,12 @@ public partial class GcaViewer
         {
             int delta = (short)((wParam.ToInt64() >> 16) & 0xFFFF);
             double step = (delta / 120.0) * 140.0;
-            EditorScroll.ScrollToHorizontalOffset(EditorScroll.HorizontalOffset + step);
+
+            if (AppSettingsStore.Current.InvertHorizontalTrackpadScrolling)
+                EditorScroll.ScrollToHorizontalOffset(EditorScroll.HorizontalOffset + step);
+            else
+                EditorScroll.ScrollToHorizontalOffset(EditorScroll.HorizontalOffset - step);
+
             handled = true;
         }
         return IntPtr.Zero;

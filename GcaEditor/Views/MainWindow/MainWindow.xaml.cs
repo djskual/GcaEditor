@@ -3,6 +3,8 @@ using GcaEditor.IO;
 using GcaEditor.Models;
 using GcaEditor.UI.Dialogs;
 using GcaEditor.UndoRedo;
+using GcaEditor.Settings;
+using GcaEditor.Views;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -39,10 +41,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        ApplyWindowPlacementFromSettings();
         UpdateWindowTitle();
 
         _zoneCatalog = ZoneCatalog.LoadOrDefault();
-        _history = new UndoRedoStack<EditorState>(s => s.DeepClone(), maxUndo: 100);
+        _history = new UndoRedoStack<EditorState>(
+            s => s.DeepClone(),
+            maxUndo: AppSettingsStore.Current.MaxUndoHistory);
 
         WireViewerEvents();
         WireWindowEvents();
@@ -64,10 +69,18 @@ public partial class MainWindow : Window
             UpdateWindowTitle();
 
             InitZoneOpacityUi();
+
+            if (AppSettingsStore.Current.AutoCheckUpdatesOnStartup)
+                _ = CheckForUpdatesAsync(silentIfUpToDate: true, silentOnError: true);
         };
     }
 
     private async void CheckUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        await CheckForUpdatesAsync(silentIfUpToDate: false, silentOnError: false);
+    }
+
+    private async Task CheckForUpdatesAsync(bool silentIfUpToDate, bool silentOnError)
     {
         try
         {
@@ -82,13 +95,18 @@ public partial class MainWindow : Window
 
             if (doc.RootElement.ValueKind != JsonValueKind.Array || doc.RootElement.GetArrayLength() == 0)
             {
-                AppMessageBox.Show(
-                    "No tag found on GitHub.",
-                    "Update check",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                if (!silentIfUpToDate)
+                {
+                    AppMessageBox.Show(
+                        "No tag found on GitHub.",
+                        "Update check",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
                 return;
             }
+
+            bool includePrerelease = AppSettingsStore.Current.IncludePrereleaseVersionsInUpdateCheck;
 
             string? latestTag = null;
             TagVersion? latestVersion = null;
@@ -105,6 +123,9 @@ public partial class MainWindow : Window
                 if (!TryParseTagVersion(tagName, out var parsed))
                     continue;
 
+                if (!includePrerelease && parsed.IsPrerelease)
+                    continue;
+
                 if (latestVersion == null || parsed.CompareTo(latestVersion.Value) > 0)
                 {
                     latestVersion = parsed;
@@ -114,11 +135,14 @@ public partial class MainWindow : Window
 
             if (latestVersion == null || string.IsNullOrWhiteSpace(latestTag))
             {
-                AppMessageBox.Show(
-                    "No valid version tag found on GitHub.",
-                    "Update check",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                if (!silentIfUpToDate)
+                {
+                    AppMessageBox.Show(
+                        "No matching version tag found on GitHub.",
+                        "Update check",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
                 return;
             }
 
@@ -126,11 +150,14 @@ public partial class MainWindow : Window
 
             if (!TryParseTagVersion(currentTag, out var currentVersion))
             {
-                AppMessageBox.Show(
-                    $"Current version tag is invalid: {currentTag}",
-                    "Update check",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                if (!silentOnError)
+                {
+                    AppMessageBox.Show(
+                        $"Current version tag is invalid: {currentTag}",
+                        "Update check",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
                 return;
             }
 
@@ -151,7 +178,7 @@ public partial class MainWindow : Window
                     });
                 }
             }
-            else
+            else if (!silentIfUpToDate)
             {
                 AppMessageBox.Show(
                     "You already have the latest version.",
@@ -162,14 +189,16 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            AppMessageBox.Show(
-                $"Unable to check updates.\n\n{ex.Message}",
-                "Update error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            if (!silentOnError)
+            {
+                AppMessageBox.Show(
+                    $"Unable to check updates.\n\n{ex.Message}",
+                    "Update error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
         }
     }
-
 
     private readonly struct TagVersion : IComparable<TagVersion>
     {
@@ -178,6 +207,7 @@ public partial class MainWindow : Window
         public int Patch { get; }
         public string? PreLabel { get; }
         public int PreNumber { get; }
+        public bool IsPrerelease => !string.IsNullOrWhiteSpace(PreLabel);
 
         public TagVersion(int major, int minor, int patch, string? preLabel, int preNumber)
         {
@@ -295,6 +325,64 @@ public partial class MainWindow : Window
         CommandManager.InvalidateRequerySuggested();
     }
 
+    private void ApplyWindowPlacementFromSettings()
+    {
+        var settings = AppSettingsStore.Current;
+        if (!settings.RememberWindowSizeAndPosition)
+            return;
+
+        if (settings.WindowWidth is double width && width >= MinWidth)
+            Width = width;
+
+        if (settings.WindowHeight is double height && height >= MinHeight)
+            Height = height;
+
+        if (settings.WindowLeft is double left && settings.WindowTop is double top)
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = left;
+            Top = top;
+        }
+    }
+
+    private void SaveWindowPlacementToSettings()
+    {
+        var current = AppSettingsStore.Current;
+        if (!current.RememberWindowSizeAndPosition)
+            return;
+
+        var updated = current.Clone();
+
+        Rect bounds = WindowState == WindowState.Normal
+            ? new Rect(Left, Top, Width, Height)
+            : RestoreBounds;
+
+        updated.WindowWidth = bounds.Width;
+        updated.WindowHeight = bounds.Height;
+        updated.WindowLeft = bounds.Left;
+        updated.WindowTop = bounds.Top;
+
+        AppSettingsStore.Save(updated);
+    }
+
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new SettingsWindow(AppSettingsStore.Current)
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() != true)
+            return;
+
+        bool rememberPlacement = dlg.ResultSettings.RememberWindowSizeAndPosition;
+
+        AppSettingsStore.Save(dlg.ResultSettings);
+
+        if (rememberPlacement)
+            SaveWindowPlacementToSettings();
+    }
+    
     private void UpdateWindowTitle()
     {
         var buildTag = GetBuildTag();
@@ -457,6 +545,9 @@ public partial class MainWindow : Window
 
     private bool TryConfirmDiscardChanges()
     {
+        if (!AppSettingsStore.Current.ConfirmBeforeResettingWorkspace)
+            return true;
+
         if (!IsDocumentDirty())
             return true;
 
@@ -514,6 +605,7 @@ public partial class MainWindow : Window
     {
         PreviewKeyDown += MainWindow_PreviewKeyDown;
         PreviewKeyUp += MainWindow_PreviewKeyUp;
+        Closing += (_, __) => SaveWindowPlacementToSettings();
     }
 
     private void WireViewerEvents()

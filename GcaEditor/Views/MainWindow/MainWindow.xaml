@@ -76,6 +76,9 @@
                 <MenuItem Header="_Redo"
                   Command="ApplicationCommands.Redo"
                   InputGestureText="Ctrl+Y"/>
+                <Separator/>
+                <MenuItem Header="_Settings..."
+                  Click="Settings_Click"/>
             </MenuItem>
 
             <MenuItem Header="_Help">
